@@ -1,24 +1,11 @@
 # snowballio
 
-## Project setup
-```
-npm install
-```
+A tiny app for managing debts using the snowball method. Should be easy enough and keep me motivated.
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## Desired features:
+- adding new debt
+- editing old debt amounts
+- add installments to existing debts
+- remove the debt automatically once it is paid off
+- summarize the total debt amounts
+- add an average free money amount to distribute into installments
