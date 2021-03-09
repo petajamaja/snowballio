@@ -1,5 +1,5 @@
 <template>
-  <main id="app">
+  <main id="main">
     <AllDebtsScreen />
     <AddNewDebtButton />
   </main>
@@ -18,12 +18,11 @@ export default {
 };
 </script>
 <style>
-
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
+#main {
+  flex: auto;
+  overflow: auto;
+  background-color: #c7d8e8;
+  padding-top: 40px;
+  padding-bottom: 40px;
 }
 </style>

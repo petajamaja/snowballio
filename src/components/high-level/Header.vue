@@ -1,6 +1,6 @@
 <template>
   <header>
-    SNOWBALL.IO
+    <h1>SNOWBALL.IO</h1>
   </header>
 </template>
 
@@ -12,7 +12,16 @@ export default {
 
 <style>
 header {
-  background-color: gainsboro;
-  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: white;
+  color: #647591;
+  min-height: 80px;
+  flex: none;
+}
+h1 {
+  font-family: "Fredoka One", cursive;
+  font-size: 40px;
 }
 </style>
