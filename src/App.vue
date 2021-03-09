@@ -35,5 +35,6 @@ body {
   flex-direction: column;
   color: #2c3e50;
   height: 100%;
+  background-color: #c7d8e8;
 }
 </style>
