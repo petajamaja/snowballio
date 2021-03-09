@@ -4,8 +4,7 @@
 
 <script>
 export default {
-  name: "AddNewDebtButton",
-  props: {}
+  name: "AddNewDebtButton"
 };
 </script>
 
