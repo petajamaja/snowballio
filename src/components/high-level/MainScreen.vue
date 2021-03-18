@@ -1,41 +1,71 @@
 <template>
   <main id="main" class="scroll-hide">
     <div id="action-buttons" class="flex-row">
-      <AddNewDebtButton @add-item-debt="addItemDebt()"/>
+      <AddNewDebtButton @add-item-debt="addItemDebt()" />
     </div>
-    <AllDebtsScreen :itemDebts="itemDebts" @delete-item-debt="deleteItemDebt($event, index)"/>
+    <AllDebtsScreen
+      :itemDebts="itemDebts"
+      @delete-item-debt="deleteItemDebt($event, index)"
+      @update-item-debt="updateItemDebt($event, update)"
+    />
+    <CalculatedTotals :totalDebtSum="totalDebtSum" />
+    <PaymentActionsScreen
+      :totalMinimumMonthlyPayment="totalMinimumMonthlyPayment"
+    />
   </main>
 </template>
 
 <script>
 import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
+import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
+import PaymentActionsScreen from "../payment-related/PaymentActionsScreen.vue";
 
 export default {
   name: "MainScreen",
   data() {
     return {
       itemDebts: []
-    }
+    };
   },
   methods: {
-    deleteItemDebt : function(index){
+    deleteItemDebt: function(index) {
       this.itemDebts.splice(index, 1);
     },
-    addItemDebt : function(){
+    addItemDebt: function() {
       this.itemDebts.push({
-        "id": this.itemDebts.length,
-        "description": "New debt",
-        "amount" : 8000,
-        "interest" : 0,
-        "installment": 50,
-        "totalPaid": 0
+        id: this.itemDebts.length,
+        description: "New debt",
+        amount: 8000,
+        interest: 0,
+        installment: 50,
+        totalPaid: 0
       });
+    },
+    updateItemDebt: function(update) {
+      this.itemDebts[update.index] = update.updatedItem;
+    }
+  },
+  computed: {
+    totalMinimumMonthlyPayment: function() {
+      return this.itemDebts.reduce(function(accumulator, currentValue) {
+        return accumulator + currentValue.installment;
+      }, 0);
+    },
+    totalDebtSum: function() {
+      return this.itemDebts.reduce(function(accumulator, currentValue) {
+        return accumulator + currentValue.amount;
+      }, 0);
+    },
+    getMonthsTillSmallestDebtOut: function() {
+      return 0;
     }
   },
   components: {
     AllDebtsScreen,
-    AddNewDebtButton
+    AddNewDebtButton,
+    PaymentActionsScreen,
+    CalculatedTotals
   }
 };
 </script>

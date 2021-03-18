@@ -1,9 +1,12 @@
 <template>
   <div class="snowballs">
-    <ItemDebt v-for="(itemDebt,index) in itemDebts" 
-              :key="itemDebt.id" 
-              :itemDebt="itemDebt" 
-              @delete-item-debt="deleteItemDebtEmitToSource($event, index)"/>
+    <ItemDebt
+      v-for="(itemDebt, index) in itemDebts"
+      :key="itemDebt.id"
+      :itemDebt="itemDebt"
+      @delete-item-debt="deleteItemDebtEmitToSource($event, index)"
+      @update-item-debt="updateItemDebtEmitToSource($event, index)"
+    />
   </div>
 </template>
 
@@ -16,8 +19,14 @@ export default {
     ItemDebt
   },
   methods: {
-    deleteItemDebtEmitToSource($event, index){
-      this.$emit('delete-item-debt', index);
+    deleteItemDebtEmitToSource($event, index) {
+      this.$emit("delete-item-debt", index);
+    },
+    updateItemDebtEmitToSource(updatedItem, index) {
+      this.$emit("update-item-debt", {
+        updatedItem: updatedItem,
+        index: index
+      });
     }
   }
 };

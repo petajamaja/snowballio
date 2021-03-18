@@ -5,7 +5,7 @@
       <button class="edit-icon"></button>
     </div>
     <div class="fields">
-      <form id="item-debt-fill-form" @submit="checkForm">
+      <form id="item-debt-fill-form" @change="sendModifiedObjectUp()">
         <label for="name-input">Description</label>
         <input id="name-input" class="name-input" v-model="description" />
         <label for="amount-input">Total amount</label>
@@ -49,11 +49,17 @@ export default {
   props: ["itemDebt"],
   data() {
     return {
-      description : this.itemDebt.description,
-      amount : this.itemDebt.amount,
+      id: this.itemDebt.id,
+      description: this.itemDebt.description,
+      amount: this.itemDebt.amount,
       interest: this.itemDebt.interest,
       installment: this.itemDebt.installment,
-      totalPaid : this.itemDebt.totalPaid
+      totalPaid: this.itemDebt.totalPaid
+    };
+  },
+  methods: {
+    sendModifiedObjectUp() {
+      this.$emit("update-item-debt", this.$data);
     }
   }
 };
