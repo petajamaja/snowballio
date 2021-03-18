@@ -81,10 +81,9 @@ export default {
   width: 110px;
   height: 110px;
   border-radius: 100%;
-    background-color:#39B4CC;
-    background-image:
-        linear-gradient(91deg, transparent 50%, #A2ECFB 50%),
-        linear-gradient(90deg, #A2ECFB 50%, transparent 50%);
+  background-color: #39b4cc;
+  background-image: linear-gradient(91deg, transparent 50%, #a2ecfb 50%),
+    linear-gradient(90deg, #a2ecfb 50%, transparent 50%);
 }
 
 .flex-column {
@@ -93,7 +92,8 @@ export default {
   justify-content: center;
   align-items: center;
 }
-.name, .amount {
+.name,
+.amount {
   font-family: "Fredoka One", cursive;
 }
 input {
@@ -101,7 +101,8 @@ input {
   flex-direction: row;
 }
 
-input, input:focus{
+input,
+input:focus {
   background-color: white;
   border: 1px solid grey;
   margin-right: 5px;
@@ -116,7 +117,7 @@ input, input:focus{
 }
 button {
   background-color: #798595;
-  color:#ffe0cb;
+  color: #ffe0cb;
 }
 .delete {
   position: absolute;
