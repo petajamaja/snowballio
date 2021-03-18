@@ -15,7 +15,7 @@
         <input id="total-paid-input" class="total-paid-input" v-model="totalPaid" readonly/>
       </form>
     </div>
-    <button class="delete" @click="$emit('delete-item-debt')">&#10006;</button>
+    <button class="delete" @click="deleteItemDebtEmit()">&#10006;</button>
   </div>
 </template>
 
@@ -23,7 +23,6 @@
 export default {
   name: "ItemDebt",
   props: ["itemDebt"],
-  emits:["delete-item-debt"],
   data() {
     return {
       description : this.itemDebt.description,
@@ -34,6 +33,9 @@ export default {
     }
   },
   methods: {
+    deleteItemDebtEmit(){
+      this.$parent.$emit('delete-item-debt');
+    }
   }
 };
 </script>

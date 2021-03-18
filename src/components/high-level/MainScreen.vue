@@ -3,7 +3,7 @@
     <div id="action-buttons" class="flex-row">
       <AddNewDebtButton />
     </div>
-    <AllDebtsScreen />
+    <AllDebtsScreen :itemDebts="itemDebts" @delete-item-debt="deleteItemDebt(index)"/>
   </main>
 </template>
 
@@ -13,6 +13,54 @@ import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 
 export default {
   name: "MainScreen",
+  data() {
+    return {
+      itemDebts: [
+        { 
+          "id": 0,
+          "description": "Loan 1",
+          "amount": 20000,
+          "interest": 5,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        { 
+          "id": 1,
+          "description": "Loan 2",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        { "id": 2,
+          "description": "Loan 3",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        { "id": 3,
+          "description": "Loan 4",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        { "id": 4,
+          "description": "Loan 5",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+      ]
+    }
+  },
+  methods: {
+    deleteItemDebt : function(index){
+      this.itemDebts.splice(index, 1);
+    }
+  },
   components: {
     AllDebtsScreen,
     AddNewDebtButton
