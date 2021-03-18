@@ -1,10 +1,8 @@
 <template>
   <div class="snowballs">
-    <ItemDebt name="Loan 1" v-bind:amount="20000" v-bind:amountPaid="0" />
-    <ItemDebt name="Loan 2" v-bind:amount="4000" v-bind:amountPaid="0" />
-    <ItemDebt name="Loan 3" v-bind:amount="8000" v-bind:amountPaid="0" />
-    <ItemDebt name="Loan 4" v-bind:amount="14000" v-bind:amountPaid="0" />
-    <ItemDebt name="Loan 5" v-bind:amount="20000" v-bind:amountPaid="0" />
+      <ItemDebt v-for="(itemDebt, index) in itemDebts" 
+          :key="index" 
+          :itemDebt="itemDebt" />
   </div>
 </template>
 
@@ -13,6 +11,47 @@ import ItemDebt from "./ItemDebt.vue";
 export default {
   name: "AllDebtsScreen",
   props: {},
+  data() {
+    return {
+      itemDebts: [
+        {
+          "description": "Loan 1",
+          "amount": 20000,
+          "interest": 5,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        {
+          "description": "Loan 2",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        {
+          "description": "Loan 3",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        {
+          "description": "Loan 4",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+        {
+          "description": "Loan 5",
+          "amount": 8000,
+          "interest": 0,
+          "installment": 100,
+          "totalPaid": 0
+        },
+      ]
+    }
+  },
   components: {
     ItemDebt
   }

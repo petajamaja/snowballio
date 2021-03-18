@@ -1,7 +1,9 @@
 <template>
   <main id="main" class="scroll-hide">
+    <div id="action-buttons" class="flex-row">
+      <AddNewDebtButton />
+    </div>
     <AllDebtsScreen />
-    <AddNewDebtButton />
   </main>
 </template>
 
