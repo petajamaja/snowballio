@@ -1,6 +1,9 @@
 <template>
   <div id="snowball-item" class="flex-column snowball-item">
-    <h2>{{description}}</h2>
+    <div class="description-area">
+      <h2>{{ description }}</h2>
+      <button class="edit-icon"></button>
+    </div>
     <div class="fields">
       <form id="item-debt-fill-form" @submit="checkForm">
         <label for="name-input">Description</label>
@@ -58,12 +61,26 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.active-border{
-    position: relative;
-    text-align: center;
-    width: 110px;
-    height: 110px;
-    border-radius: 100%;
+.description-area {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.edit-icon {
+  background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM3ZE-2k1nS_nzIYmVJRY4TuBaUn6o1Nj8Og&usqp=CAU");
+  width: 20px;
+  height: 20px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  margin-left: 10px;
+}
+.active-border {
+  position: relative;
+  text-align: center;
+  width: 110px;
+  height: 110px;
+  border-radius: 100%;
     background-color:#39B4CC;
     background-image:
         linear-gradient(91deg, transparent 50%, #A2ECFB 50%),
