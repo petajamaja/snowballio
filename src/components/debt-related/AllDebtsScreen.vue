@@ -1,8 +1,9 @@
 <template>
   <div class="snowballs">
-    <ItemDebt v-for="itemDebt in itemDebts" 
+    <ItemDebt v-for="(itemDebt,index) in itemDebts" 
               :key="itemDebt.id" 
-              :itemDebt="itemDebt" />
+              :itemDebt="itemDebt" 
+              @delete-item-debt="deleteItemDebtEmitToSource($event, index)"/>
   </div>
 </template>
 
@@ -13,6 +14,11 @@ export default {
   props: ["itemDebts"],
   components: {
     ItemDebt
+  },
+  methods: {
+    deleteItemDebtEmitToSource($event, index){
+      this.$emit('delete-item-debt', index);
+    }
   }
 };
 </script>

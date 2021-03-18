@@ -3,7 +3,7 @@
     <div id="action-buttons" class="flex-row">
       <AddNewDebtButton />
     </div>
-    <AllDebtsScreen :itemDebts="itemDebts" @delete-item-debt="deleteItemDebt(index)"/>
+    <AllDebtsScreen :itemDebts="itemDebts" @delete-item-debt="deleteItemDebt($event, index)"/>
   </main>
 </template>
 

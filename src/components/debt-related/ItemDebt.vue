@@ -15,7 +15,7 @@
         <input id="total-paid-input" class="total-paid-input" v-model="totalPaid" readonly/>
       </form>
     </div>
-    <button class="delete" @click="deleteItemDebtEmit()">&#10006;</button>
+    <button class="delete" @click="$emit('delete-item-debt')">&#10006;</button>
   </div>
 </template>
 
@@ -30,11 +30,6 @@ export default {
       interest: this.itemDebt.interest,
       installment: this.itemDebt.installment,
       totalPaid : this.itemDebt.totalPaid
-    }
-  },
-  methods: {
-    deleteItemDebtEmit(){
-      this.$parent.$emit('delete-item-debt');
     }
   }
 };
