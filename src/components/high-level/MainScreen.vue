@@ -1,7 +1,7 @@
 <template>
   <main id="main" class="scroll-hide">
     <div id="action-buttons" class="flex-row">
-      <AddNewDebtButton />
+      <AddNewDebtButton @add-item-debt="addItemDebt()"/>
     </div>
     <AllDebtsScreen :itemDebts="itemDebts" @delete-item-debt="deleteItemDebt($event, index)"/>
   </main>
@@ -15,50 +15,22 @@ export default {
   name: "MainScreen",
   data() {
     return {
-      itemDebts: [
-        { 
-          "id": 0,
-          "description": "Loan 1",
-          "amount": 20000,
-          "interest": 5,
-          "installment": 100,
-          "totalPaid": 0
-        },
-        { 
-          "id": 1,
-          "description": "Loan 2",
-          "amount": 8000,
-          "interest": 0,
-          "installment": 100,
-          "totalPaid": 0
-        },
-        { "id": 2,
-          "description": "Loan 3",
-          "amount": 8000,
-          "interest": 0,
-          "installment": 100,
-          "totalPaid": 0
-        },
-        { "id": 3,
-          "description": "Loan 4",
-          "amount": 8000,
-          "interest": 0,
-          "installment": 100,
-          "totalPaid": 0
-        },
-        { "id": 4,
-          "description": "Loan 5",
-          "amount": 8000,
-          "interest": 0,
-          "installment": 100,
-          "totalPaid": 0
-        },
-      ]
+      itemDebts: []
     }
   },
   methods: {
     deleteItemDebt : function(index){
       this.itemDebts.splice(index, 1);
+    },
+    addItemDebt : function(){
+      this.itemDebts.push({
+        "id": this.itemDebts.length,
+        "description": "New debt",
+        "amount" : 8000,
+        "interest" : 0,
+        "installment": 50,
+        "totalPaid": 0
+      });
     }
   },
   components: {

@@ -1,5 +1,5 @@
 <template>
-  <button>ADD DEBT</button>
+  <button @click="$emit('add-item-debt')">ADD DEBT</button>
 </template>
 
 <script>
