@@ -4,15 +4,36 @@
     <div class="fields">
       <form id="item-debt-fill-form" @submit="checkForm">
         <label for="name-input">Description</label>
-        <input id="name-input" class="name-input" v-model="description"/>
+        <input id="name-input" class="name-input" v-model="description" />
         <label for="amount-input">Total amount</label>
-        <input id="amount-input" class="amount-input" v-model="amount"/>
+        <input
+          type="number"
+          id="amount-input"
+          class="amount-input"
+          v-model.number="amount"
+        />
         <label for="interest-input">Interest</label>
-        <input id="interest-input" class="interest-input" v-model="interest"/>
+        <input
+          type="number"
+          id="interest-input"
+          class="interest-input"
+          v-model.number="interest"
+        />
         <label for="installment-input">Montly minimum payment</label>
-        <input id="installment-input" class="installment-input" v-model="installment"/>
+        <input
+          type="number"
+          id="installment-input"
+          class="installment-input"
+          v-model.number="installment"
+        />
         <label for="total-paid-input">Already paid off:</label>
-        <input id="total-paid-input" class="total-paid-input" v-model="totalPaid" readonly/>
+        <input
+          type="number"
+          id="total-paid-input"
+          class="total-paid-input"
+          v-model.number="totalPaid"
+          readonly
+        />
       </form>
     </div>
     <button class="delete" @click="$emit('delete-item-debt')">&#10006;</button>
