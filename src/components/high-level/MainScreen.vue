@@ -8,9 +8,11 @@
       @delete-item-debt="deleteItemDebt($event, index)"
       @update-item-debt="updateItemDebt($event, update)"
     />
-    <CalculatedTotals :totalDebtSum="totalDebtSum" />
-    <PaymentActionsScreen
-      :totalMinimumMonthlyPayment="totalMinimumMonthlyPayment"
+    <CalculatedTotals
+      :totalDebtSum="totalDebtSum"
+      :paidOff="totalPaidOff"
+      :monthsTillSmallestDebtOut="monthsTillSmallestDebtOutIfNoExtraMoney"
+      :monthsTillAllDebtOut="monthsTillAllDebtOutIfNoExtraMoney"
     />
   </main>
 </template>
@@ -25,7 +27,19 @@ export default {
   name: "MainScreen",
   data() {
     return {
-      itemDebts: []
+      itemDebts: [
+        {
+          id: 0,
+          description: "Placeholder debt",
+          amount: 8000,
+          interest: 0,
+          installment: 50,
+          totalPaid: 0
+        }
+      ],
+      installment: Number,
+      monthlyInstallments: [],
+      sumToSpendEveryMonth: Number
     };
   },
   methods: {
@@ -52,13 +66,24 @@ export default {
         return accumulator + currentValue.installment;
       }, 0);
     },
+    totalPaidOff: function() {
+      return this.itemDebts.reduce(function(accumulator, currentValue) {
+        return accumulator + currentValue.totalPaid;
+      }, 0);
+    },
     totalDebtSum: function() {
       return this.itemDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.amount;
       }, 0);
     },
-    getMonthsTillSmallestDebtOut: function() {
-      return 0;
+    monthsTillSmallestDebtOutIfNoExtraMoney: function() {
+      let smallestDebt = this.itemDebts[0];
+      // installment never zero
+      return Math.round(smallestDebt.amount / smallestDebt.installment);
+    },
+    monthsTillAllDebtOutIfNoExtraMoney: function() {
+      // totalMinimumMonthlyPayment >= smallestDebt.installment > 0
+      return Math.round(this.totalDebtSum / this.totalMinimumMonthlyPayment);
     }
   },
   components: {

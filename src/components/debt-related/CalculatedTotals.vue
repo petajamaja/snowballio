@@ -1,14 +1,21 @@
 <template>
   <div class="calculated-totals">
     <p>Total debt: {{ totalDebtSum }}</p>
-    <p>Months till smallest debt paid off:</p>
+    <p>Total paid off: {{ paidOff }}</p>
+    <p>Months till smallest debt paid off: {{ monthsTillSmallestDebtOut }}</p>
+    <p>Months till all debt paid off: {{ monthsTillAllDebtOut }}</p>
   </div>
 </template>
 
 <script>
 export default {
   name: "CalculatedTotals",
-  props: ["totalDebtSum"]
+  props: [
+    "totalDebtSum",
+    "paidOff",
+    "monthsTillSmallestDebtOut",
+    "monthsTillAllDebtOut"
+  ]
 };
 </script>
 
