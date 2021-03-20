@@ -1,10 +1,17 @@
 <template>
   <main id="main" class="scroll-hide">
     <div id="action-buttons" class="flex-row">
+      <PaymentActionCall
+        :minimum="totalMinimumMonthlyPayment"
+        :carryOverMoney="remainingMoneyToCarryOver"
+        :isAllDebtPaidOff="isAllDebtPaidOff"
+        @pay-off-all-minimum-amounts="payOffMinimumMonthlyInstallments()"
+      />
       <AddNewDebtButton @add-item-debt="addItemDebt()" />
     </div>
     <AllDebtsScreen
-      :itemDebts="itemDebts"
+      :itemDebts="activeDebts"
+      :paidOffDebts="paidOffDebts"
       @delete-item-debt="deleteItemDebt($event, index)"
       @update-item-debt="updateItemDebt($event, update)"
     />
@@ -21,13 +28,13 @@
 import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
-import PaymentActionsScreen from "../payment-related/PaymentActionsScreen.vue";
+import PaymentActionCall from "../payment-related/PaymentActionCall.vue";
 
 export default {
   name: "MainScreen",
   data() {
     return {
-      itemDebts: [
+      activeDebts: [
         {
           id: 0,
           description: "Placeholder debt",
@@ -37,9 +44,12 @@ export default {
           totalPaid: 0
         }
       ],
+      paidOffDebts: [],
       installment: Number,
       monthlyInstallments: [],
-      sumToSpendEveryMonth: Number
+      sumToSpendEveryMonth: Number,
+      remainingMoneyToCarryOver: 0,
+      isAllDebtPaidOff: false
     };
   },
   methods: {
@@ -47,37 +57,63 @@ export default {
       this.itemDebts.splice(index, 1);
     },
     addItemDebt: function() {
-      this.itemDebts.push({
-        id: this.itemDebts.length,
+      this.activeDebts.push({
+        id: this.activeDebts.length,
         description: "New debt",
         amount: 8000,
         interest: 0,
-        installment: 50,
+        installment: 5000,
         totalPaid: 0
       });
+      this.activeDebts[update.index] = update.updatedItem;
+    payOffDebtAtIndex: function(debt, debtIndex) {
+      this.remainingMoneyToCarryOver += debt.totalPaid - debt.amount;
+      debt.totalPaid = debt.amount;
+      let debtIsNotTheLastOne = this.activeDebts.length !== debtIndex + 1;
+      if (debtIsNotTheLastOne) {
+        this.activeDebts[
+          debtIndex + 1
+        ].totalPaid += this.remainingMoneyToCarryOver;
+      } else {
+        this.isAllDebtPaidOff = true;
+      }
+      this.paidOffDebts.push(this.activeDebts[debtIndex]);
+      this.deleteItemDebt(debtIndex);
     },
-    updateItemDebt: function(update) {
-      this.itemDebts[update.index] = update.updatedItem;
+    payOffMinimumDebtInstallment: function(debt, debtIndex) {
+      debt.totalPaid += debt.installment;
+      if (debt.totalPaid >= debt.amount) {
+        this.payOffDebtAtIndex(debt, debtIndex);
+      }
+    },
+    payOffMinimumMonthlyInstallments: function() {
+      this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
     }
   },
   computed: {
     totalMinimumMonthlyPayment: function() {
-      return this.itemDebts.reduce(function(accumulator, currentValue) {
+      if (this.isAllDebtPaidOff) return 0;
+      return this.activeDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.installment;
       }, 0);
     },
     totalPaidOff: function() {
-      return this.itemDebts.reduce(function(accumulator, currentValue) {
+      let debts = this.isAllDebtPaidOff
+        ? this.paidOffDebts
+        : this.activeDebts.concat(this.paidOffDebts);
+      return debts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.totalPaid;
       }, 0);
     },
     totalDebtSum: function() {
-      return this.itemDebts.reduce(function(accumulator, currentValue) {
+      if (this.isAllDebtPaidOff) return 0;
+      return this.activeDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.amount;
       }, 0);
     },
     monthsTillSmallestDebtOutIfNoExtraMoney: function() {
-      let smallestDebt = this.itemDebts[0];
+      if (this.isAllDebtPaidOff) return 0;
+      let smallestDebt = this.activeDebts[0];
       // installment never zero
       return Math.round(smallestDebt.amount / smallestDebt.installment);
     },
@@ -89,7 +125,7 @@ export default {
   components: {
     AllDebtsScreen,
     AddNewDebtButton,
-    PaymentActionsScreen,
+    PaymentActionCall,
     CalculatedTotals
   }
 };

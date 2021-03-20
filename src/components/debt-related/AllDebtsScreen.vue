@@ -8,13 +8,21 @@
       @update-item-debt="updateItemDebtEmitToSource($event, index)"
     />
   </div>
+  <p>====================================</p>
+  <div class="snowballs">
+    <ItemDebt
+      v-for="itemDebt in paidOffDebts"
+      :key="itemDebt.id"
+      :itemDebt="itemDebt"
+    />
+  </div>
 </template>
 
 <script>
 import ItemDebt from "./ItemDebt.vue";
 export default {
   name: "AllDebtsScreen",
-  props: ["itemDebts"],
+  props: ["itemDebts", "paidOffDebts"],
   components: {
     ItemDebt
   },
