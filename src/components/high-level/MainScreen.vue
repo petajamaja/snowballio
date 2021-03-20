@@ -40,7 +40,7 @@ export default {
           description: "Placeholder debt",
           amount: 8000,
           interest: 0,
-          installment: 50,
+          installment: 5000,
           totalPaid: 0
         }
       ],
@@ -53,8 +53,11 @@ export default {
     };
   },
   methods: {
-    deleteItemDebt: function(index) {
-      this.itemDebts.splice(index, 1);
+    sortDebtsBasedOnAmount: function(debtA, debtB) {
+      return debtA.amount - debtB.amount;
+    },
+    deleteItemDebt: function(debtIndex) {
+      this.activeDebts.splice(debtIndex, 1);
     },
     addItemDebt: function() {
       this.activeDebts.push({
@@ -65,7 +68,12 @@ export default {
         installment: 5000,
         totalPaid: 0
       });
+      this.activeDebts.sort(this.sortDebtsBasedOnAmount);
+    },
+    updateItemDebt: function(update) {
       this.activeDebts[update.index] = update.updatedItem;
+      this.activeDebts.sort(this.sortDebtsBasedOnAmount);
+    },
     payOffDebtAtIndex: function(debt, debtIndex) {
       this.remainingMoneyToCarryOver += debt.totalPaid - debt.amount;
       debt.totalPaid = debt.amount;
