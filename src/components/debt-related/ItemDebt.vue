@@ -4,7 +4,7 @@
       <h2>{{ description }}</h2>
       <button class="edit-icon"></button>
     </div>
-    <div class="fields">
+    <div v-if="totalPaid !== amount" class="fields">
       <form id="item-debt-fill-form" @change="sendModifiedObjectUp()">
         <label for="name-input">Description</label>
         <input id="name-input" class="name-input" v-model="description" />
@@ -29,15 +29,15 @@
           class="installment-input"
           v-model.number="installment"
         />
-        <label for="total-paid-input">Already paid off:</label>
-        <input
-          type="number"
-          id="total-paid-input"
-          class="total-paid-input"
-          v-model.number="totalPaid"
-          readonly
-        />
+        <div>
+          <p>Already paid off:</p>
+          <p>{{ itemDebt.totalPaid }}</p>
+        </div>
       </form>
+    </div>
+    <div v-else>
+      <p>You paid this debt off completely!</p>
+      <p>Total money paid : {{ totalPaid }}</p>
     </div>
     <button class="delete" @click="$emit('delete-item-debt')">&#10006;</button>
   </div>
