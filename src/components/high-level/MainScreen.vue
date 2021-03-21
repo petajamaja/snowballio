@@ -4,7 +4,7 @@
       <PaymentActionCall
         :minimum="totalMinimumMonthlyPayment"
         :carryOverMoney="remainingMoneyToCarryOver"
-        :isAllDebtPaidOff="isAllDebtPaidOff"
+        :allDebtIsPaidOff="allDebtIsPaidOff"
         @pay-off-all-minimum-amounts="payOffMinimumMonthlyInstallments()"
       />
       <AddNewDebtButton @add-item-debt="addItemDebt()" />
@@ -48,8 +48,7 @@ export default {
       installment: Number,
       monthlyInstallments: [],
       sumToSpendEveryMonth: Number,
-      remainingMoneyToCarryOver: 0,
-      isAllDebtPaidOff: false
+      remainingMoneyToCarryOver: 0
     };
   },
   methods: {
@@ -100,13 +99,13 @@ export default {
   },
   computed: {
     totalMinimumMonthlyPayment: function() {
-      if (this.isAllDebtPaidOff) return 0;
+      if (this.allDebtIsPaidOff) return 0;
       return this.activeDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.installment;
       }, 0);
     },
     totalPaidOff: function() {
-      let debts = this.isAllDebtPaidOff
+      let debts = this.allDebtIsPaidOff
         ? this.paidOffDebts
         : this.activeDebts.concat(this.paidOffDebts);
       return debts.reduce(function(accumulator, currentValue) {
@@ -114,20 +113,27 @@ export default {
       }, 0);
     },
     totalDebtSum: function() {
-      if (this.isAllDebtPaidOff) return 0;
+      if (this.allDebtsAreDeletedOrPaidOff) return 0;
       return this.activeDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.amount;
       }, 0);
     },
     monthsTillSmallestDebtOutIfNoExtraMoney: function() {
-      if (this.isAllDebtPaidOff) return 0;
+      if (this.allDebtsAreDeletedOrPaidOff) return 0;
       let smallestDebt = this.activeDebts[0];
       // installment never zero
       return Math.round(smallestDebt.amount / smallestDebt.installment);
     },
     monthsTillAllDebtOutIfNoExtraMoney: function() {
+      if (this.allDebtsAreDeletedOrPaidOff) return 0;
       // totalMinimumMonthlyPayment >= smallestDebt.installment > 0
       return Math.round(this.totalDebtSum / this.totalMinimumMonthlyPayment);
+    },
+    allDebtIsPaidOff: function() {
+      return this.activeDebts.length === 0 && this.paidOffDebts.length > 0;
+    },
+    allDebtsAreDeletedOrPaidOff: function() {
+      return this.activeDebts.length === 0;
     }
   },
   components: {
