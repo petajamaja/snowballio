@@ -39,14 +39,14 @@
       <p>You paid this debt off completely!</p>
       <p>Total money paid : {{ totalPaid }}</p>
     </div>
-    <button class="delete" @click="$emit('delete-item-debt')">&#10006;</button>
+    <button class="delete" v-if="!debtIsPaidOff" @click="$emit('delete-item-debt')">&#10006;</button>
   </div>
 </template>
 
 <script>
 export default {
   name: "ItemDebt",
-  props: ["itemDebt"],
+  props: ["itemDebt","thisIsTheMinimalDebt","debtIsPaidOff"],
   data() {
     return {
       id: this.itemDebt.id,

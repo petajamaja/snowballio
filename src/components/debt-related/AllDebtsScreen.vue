@@ -4,6 +4,7 @@
       v-for="(itemDebt, index) in itemDebts"
       :key="itemDebt.id"
       :itemDebt="itemDebt"
+      :thisIsTheMinimalDebt="index===0"
       @delete-item-debt="deleteItemDebtEmitToSource($event, index)"
       @update-item-debt="updateItemDebtEmitToSource($event, index)"
     />
@@ -14,6 +15,8 @@
       v-for="itemDebt in paidOffDebts"
       :key="itemDebt.id"
       :itemDebt="itemDebt"
+      :debtIsPaidOff="true"
+      :thisIsTheMinimalDebt="false"
     />
   </div>
 </template>
