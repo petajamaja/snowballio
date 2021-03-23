@@ -4,7 +4,7 @@
       <h2>{{ description }}</h2>
       <button class="edit-icon"></button>
     </div>
-    <div v-if="totalPaid !== amount" class="fields">
+    <div v-if="totalPaid !== amount || amount === 0" class="fields">
       <form id="item-debt-fill-form" @change="sendModifiedObjectUp()">
         <label for="name-input">Description</label>
         <input id="name-input" class="name-input" v-model="description" />
@@ -15,6 +15,7 @@
           class="amount-input"
           v-model.number="amount"
         />
+        <p v-if="amountIsZero" class="error">Debt amount must be positive</p>
         <label for="interest-input">Interest</label>
         <input
           type="number"
@@ -29,6 +30,9 @@
           class="installment-input"
           v-model.number="installment"
         />
+        <p v-if="installmentIsZero && thisIsTheMinimalDebt" class="error">
+          First debt payment must be positive!
+        </p>
         <div>
           <p>Already paid off:</p>
           <p>{{ itemDebt.totalPaid }}</p>
@@ -39,14 +43,20 @@
       <p>You paid this debt off completely!</p>
       <p>Total money paid : {{ totalPaid }}</p>
     </div>
-    <button class="delete" v-if="!debtIsPaidOff" @click="$emit('delete-item-debt')">&#10006;</button>
+    <button
+      class="delete"
+      v-if="!debtIsPaidOff"
+      @click="$emit('delete-item-debt')"
+    >
+      &#10006;
+    </button>
   </div>
 </template>
 
 <script>
 export default {
   name: "ItemDebt",
-  props: ["itemDebt","thisIsTheMinimalDebt","debtIsPaidOff"],
+  props: ["itemDebt", "thisIsTheMinimalDebt", "debtIsPaidOff"],
   data() {
     return {
       id: this.itemDebt.id,
@@ -58,8 +68,23 @@ export default {
     };
   },
   methods: {
-    sendModifiedObjectUp() {
-      this.$emit("update-item-debt", this.$data);
+    sendModifiedObjectUp: function() {
+      if (this.allFieldsPassValidation)
+        this.$emit("update-item-debt", this.$data);
+    }
+  },
+  computed: {
+    amountIsZero: function() {
+      return this.amount === 0;
+    },
+    installmentIsZero: function() {
+      return this.installment === 0;
+    },
+    allFieldsPassValidation: function() {
+      return (
+        !this.amountIsZero &&
+        !(this.installmentIsZero && this.thisIsTheMinimalDebt)
+      );
     }
   }
 };
@@ -72,6 +97,11 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+}
+.error {
+  color: crimson;
+  font-weight: bold;
+  font-size: 14px;
 }
 .edit-icon {
   background-image: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQM3ZE-2k1nS_nzIYmVJRY4TuBaUn6o1Nj8Og&usqp=CAU");

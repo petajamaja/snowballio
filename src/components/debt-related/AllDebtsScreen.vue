@@ -4,7 +4,7 @@
       v-for="(itemDebt, index) in itemDebts"
       :key="itemDebt.id"
       :itemDebt="itemDebt"
-      :thisIsTheMinimalDebt="index===0"
+      :thisIsTheMinimalDebt="index === 0"
       @delete-item-debt="deleteItemDebtEmitToSource($event, index)"
       @update-item-debt="updateItemDebtEmitToSource($event, index)"
     />
@@ -30,10 +30,10 @@ export default {
     ItemDebt
   },
   methods: {
-    deleteItemDebtEmitToSource($event, index) {
+    deleteItemDebtEmitToSource: function($event, index) {
       this.$emit("delete-item-debt", index);
     },
-    updateItemDebtEmitToSource(updatedItem, index) {
+    updateItemDebtEmitToSource: function(updatedItem, index) {
       this.$emit("update-item-debt", {
         updatedItem: updatedItem,
         index: index
