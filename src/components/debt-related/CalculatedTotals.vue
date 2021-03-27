@@ -1,9 +1,14 @@
 <template>
-  <div class="calculated-totals">
+  <div v-if="allInputsCorrect" class="calculated-totals">
     <p>Total debt: {{ totalDebtSum }}</p>
     <p>Total paid off: {{ paidOff }}</p>
     <p>Months till smallest debt paid off: {{ monthsTillSmallestDebtOut }}</p>
     <p>Months till all debt paid off: {{ monthsTillAllDebtOut }}</p>
+  </div>
+  <div v-else>
+    <p>
+      To see the statistics, please make sure all amounts are set correctly!
+    </p>
   </div>
 </template>
 
@@ -14,7 +19,8 @@ export default {
     "totalDebtSum",
     "paidOff",
     "monthsTillSmallestDebtOut",
-    "monthsTillAllDebtOut"
+    "monthsTillAllDebtOut",
+    "allInputsCorrect"
   ]
 };
 </script>

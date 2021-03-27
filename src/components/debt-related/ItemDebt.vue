@@ -63,6 +63,12 @@ export default {
       totalPaid: this.itemDebt.totalPaid
     };
   },
+  watch: {
+    thisIsTheMinimalDebt: function() {
+      if (!this.allFieldsPassValidation)
+        this.emitter.emit("there-is-error-in-debt", this.id);
+    }
+  },
   methods: {
     sendModifiedObjectUp: function() {
       if (this.allFieldsPassValidation) {
@@ -70,11 +76,16 @@ export default {
           index: this.index,
           updatedItem: this.$data
         });
+        this.emitter.emit("removed-error-in-debt", this.id);
       } else {
+        this.emitter.emit("there-is-error-in-debt", this.id);
       }
     },
     deleteItemDebt: function() {
-      this.emitter.emit("delete-item-debt", this.index);
+      this.emitter.emit("delete-item-debt", {
+        debtIndex: this.index,
+        debtId: this.id
+      });
     }
   },
   computed: {

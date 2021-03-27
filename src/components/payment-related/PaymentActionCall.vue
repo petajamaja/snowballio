@@ -1,5 +1,10 @@
 <template>
-  <div v-if="!allDebtIsPaidOff" class="payment-actions">
+  <div v-if="!allInputsCorrect">
+    <p>
+      To start paying debt off, please make sure all amounts are set correctly!
+    </p>
+  </div>
+  <div v-else-if="!allDebtIsPaidOff" class="payment-actions">
     <div class="minimum-payment">
       <p>
         Minimum payment: <span class="number">{{ minimum }}</span>
@@ -21,7 +26,7 @@
 <script>
 export default {
   name: "PaymentActionCall",
-  props: ["minimum", "allDebtIsPaidOff", "carryOverMoney"]
+  props: ["minimum", "allDebtIsPaidOff", "carryOverMoney", "allInputsCorrect"]
 };
 </script>
 

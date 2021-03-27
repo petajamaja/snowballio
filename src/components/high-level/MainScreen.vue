@@ -4,6 +4,7 @@
       <PaymentActionCall
         :minimum="totalMinimumMonthlyPayment"
         :carryOverMoney="remainingMoneyToCarryOver"
+        :allInputsCorrect="allInputsCorrect"
         :allDebtIsPaidOff="allDebtIsPaidOff"
       />
       <AddNewDebtButton />
@@ -14,6 +15,7 @@
       :paidOff="totalPaidOff"
       :monthsTillSmallestDebtOut="monthsTillSmallestDebtOutIfNoExtraMoney"
       :monthsTillAllDebtOut="monthsTillAllDebtOutIfNoExtraMoney"
+      :allInputsCorrect="allInputsCorrect"
     />
   </main>
 </template>
@@ -42,18 +44,25 @@ export default {
       installment: Number,
       monthlyInstallments: [],
       sumToSpendEveryMonth: Number,
-      remainingMoneyToCarryOver: 0
+      remainingMoneyToCarryOver: 0,
+      validationErrors: []
     };
   },
   mounted() {
+    this.emitter.on("there-is-error-in-debt", errenousDebtId => {
+      this.validationErrors.push(errenousDebtId);
+    });
+    this.emitter.on("removed-error-in-debt", debtId => {
+      this.removeValidationErrors(debtId);
+    });
     this.emitter.on("pay-off-all-minimum-amounts", () => {
       this.payOffMinimumMonthlyInstallments();
     });
     this.emitter.on("add-item-debt", () => {
       this.addItemDebt();
     });
-    this.emitter.on("delete-item-debt", itemDebtIndex => {
-      this.deleteItemDebt(itemDebtIndex);
+    this.emitter.on("delete-item-debt", ({ debtIndex, debtId }) => {
+      this.deleteItemDebt(debtIndex, debtId);
     });
     this.emitter.on("update-item-debt", update => {
       this.updateItemDebt(update);
@@ -63,7 +72,8 @@ export default {
     sortDebtsBasedOnAmount: function(debtA, debtB) {
       return debtA.amount - debtB.amount;
     },
-    deleteItemDebt: function(debtIndex) {
+    deleteItemDebt: function(debtIndex, debtId) {
+      this.removeValidationErrors(debtId);
       this.activeDebts.splice(debtIndex, 1);
     },
     addItemDebt: function() {
@@ -103,11 +113,16 @@ export default {
     },
     payOffMinimumMonthlyInstallments: function() {
       this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
+    },
+    removeValidationErrors: function(debtId) {
+      let index = this.validationErrors.indexOf(debtId);
+      if (index !== -1) this.validationErrors.splice(index, 1);
     }
   },
   computed: {
     totalMinimumMonthlyPayment: function() {
-      if (this.allDebtIsPaidOff) return 0;
+      if (this.allDebtsAreDeletedOrPaidOff || this.validationErrors.length)
+        return 0;
       return this.activeDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.installment;
       }, 0);
@@ -121,17 +136,17 @@ export default {
       }, 0);
     },
     totalDebtSum: function() {
-      if (this.allDebtsAreDeletedOrPaidOff) return 0;
+      if (this.allDebtsAreDeletedOrPaidOff || this.validationErrors.length)
+        return 0;
       return this.activeDebts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.amount;
       }, 0);
     },
     monthsTillSmallestDebtOutIfNoExtraMoney: function() {
-      if (this.allDebtsAreDeletedOrPaidOff) return 0;
+      if (this.allDebtsAreDeletedOrPaidOff || this.validationErrors.length)
+        return 0;
       let smallestDebt = this.activeDebts[0];
-      // theoretically this should be an error... Zero's just a placeholder here.
-      if (smallestDebt.installment <= 0) return 0;
-      // installment never zero... ideally, unless the user tries very hard :)
+      // installment never zero, errors handled above
       return Math.round(smallestDebt.amount / smallestDebt.installment);
     },
     monthsTillAllDebtOutIfNoExtraMoney: function() {
@@ -148,6 +163,11 @@ export default {
     },
     allDebtsAreDeletedOrPaidOff: function() {
       return this.activeDebts.length === 0;
+    },
+    allInputsCorrect: function() {
+      return (
+        this.allDebtsAreDeletedOrPaidOff || this.validationErrors.length == 0
+      );
     }
   },
   components: {
