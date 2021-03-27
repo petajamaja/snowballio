@@ -1,19 +1,29 @@
 <template>
   <div id="snowball-item" class="flex-column snowball-item">
     <div class="description-area">
-      <h2>{{ description }}</h2>
-      <button class="edit-icon"></button>
+      <h2 v-show="!descriptionEditInputOpen" @click="toggleDescriptionEdit()">
+        {{ debtItem.description }}
+      </h2>
+      <input
+        v-show="descriptionEditInputOpen"
+        id="name-input"
+        class="name-input"
+        v-model="debtItem.description"
+        @change="toggleDescriptionEdit()"
+      />
+      <button class="edit-icon" @click="toggleDescriptionEdit()"></button>
     </div>
-    <div v-if="totalPaid !== amount || amount === 0" class="fields">
+    <div
+      v-if="debtItem.totalPaid !== debtItem.amount || debtItem.amount === 0"
+      class="fields"
+    >
       <form id="item-debt-fill-form" @change="sendModifiedObjectUp()">
-        <label for="name-input">Description</label>
-        <input id="name-input" class="name-input" v-model="description" />
         <label for="amount-input">Total amount</label>
         <input
           type="number"
           id="amount-input"
           class="amount-input"
-          v-model.number="amount"
+          v-model.number="debtItem.amount"
         />
         <p v-if="amountIsZero" class="error">Debt amount must be positive</p>
         <label for="interest-input">Interest</label>
@@ -21,27 +31,27 @@
           type="number"
           id="interest-input"
           class="interest-input"
-          v-model.number="interest"
+          v-model.number="debtItem.interest"
         />
         <label for="installment-input">Montly minimum payment</label>
         <input
           type="number"
           id="installment-input"
           class="installment-input"
-          v-model.number="installment"
+          v-model.number="debtItem.installment"
         />
         <p v-if="installmentIsZero && thisIsTheMinimalDebt" class="error">
           First debt payment must be positive!
         </p>
         <div>
           <p>Already paid off:</p>
-          <p>{{ itemDebt.totalPaid }}</p>
+          <p>{{ debtItem.totalPaid }}</p>
         </div>
       </form>
     </div>
     <div v-else>
       <p>You paid this debt off completely!</p>
-      <p>Total money paid : {{ totalPaid }}</p>
+      <p>Total money paid : {{ debtItem.totalPaid }}</p>
     </div>
     <button class="delete" v-if="!debtIsPaidOff" @click="deleteItemDebt()">
       &#10006;
@@ -55,18 +65,21 @@ export default {
   props: ["index", "itemDebt", "thisIsTheMinimalDebt", "debtIsPaidOff"],
   data() {
     return {
-      id: this.itemDebt.id,
-      description: this.itemDebt.description,
-      amount: this.itemDebt.amount,
-      interest: this.itemDebt.interest,
-      installment: this.itemDebt.installment,
-      totalPaid: this.itemDebt.totalPaid
+      debtItem: {
+        id: this.itemDebt.id,
+        description: this.itemDebt.description,
+        amount: this.itemDebt.amount,
+        interest: this.itemDebt.interest,
+        installment: this.itemDebt.installment,
+        totalPaid: this.itemDebt.totalPaid
+      },
+      descriptionEditInputOpen: false
     };
   },
   watch: {
     thisIsTheMinimalDebt: function() {
       if (!this.allFieldsPassValidation)
-        this.emitter.emit("there-is-error-in-debt", this.id);
+        this.emitter.emit("there-is-error-in-debt", this.debtItem.id);
     }
   },
   methods: {
@@ -74,26 +87,29 @@ export default {
       if (this.allFieldsPassValidation) {
         this.emitter.emit("update-item-debt", {
           index: this.index,
-          updatedItem: this.$data
+          updatedItem: this.debtItem
         });
-        this.emitter.emit("removed-error-in-debt", this.id);
+        this.emitter.emit("removed-error-in-debt", this.debtItem.id);
       } else {
-        this.emitter.emit("there-is-error-in-debt", this.id);
+        this.emitter.emit("there-is-error-in-debt", this.debtItem.id);
       }
     },
     deleteItemDebt: function() {
       this.emitter.emit("delete-item-debt", {
         debtIndex: this.index,
-        debtId: this.id
+        debtId: this.debtItem.id
       });
+    },
+    toggleDescriptionEdit: function() {
+      this.descriptionEditInputOpen = !this.descriptionEditInputOpen;
     }
   },
   computed: {
     amountIsZero: function() {
-      return this.amount === 0;
+      return this.debtItem.amount === 0;
     },
     installmentIsZero: function() {
-      return this.installment === 0;
+      return this.debtItem.installment === 0;
     },
     allFieldsPassValidation: function() {
       return (
@@ -112,6 +128,16 @@ export default {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+}
+.name-input {
+  background: white;
+  border: none;
+  font-size: 1.5em;
+  margin-block-start: 0.83em;
+  margin-block-end: 0.83em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  font-weight: bold;
 }
 .error {
   color: crimson;
