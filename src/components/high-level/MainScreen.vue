@@ -5,16 +5,10 @@
         :minimum="totalMinimumMonthlyPayment"
         :carryOverMoney="remainingMoneyToCarryOver"
         :allDebtIsPaidOff="allDebtIsPaidOff"
-        @pay-off-all-minimum-amounts="payOffMinimumMonthlyInstallments()"
       />
-      <AddNewDebtButton @add-item-debt="addItemDebt()" />
+      <AddNewDebtButton />
     </div>
-    <AllDebtsScreen
-      :itemDebts="activeDebts"
-      :paidOffDebts="paidOffDebts"
-      @delete-item-debt="deleteItemDebt($event, index)"
-      @update-item-debt="updateItemDebt($event, update)"
-    />
+    <AllDebtsScreen :itemDebts="activeDebts" :paidOffDebts="paidOffDebts" />
     <CalculatedTotals
       :totalDebtSum="totalDebtSum"
       :paidOff="totalPaidOff"
@@ -50,6 +44,20 @@ export default {
       sumToSpendEveryMonth: Number,
       remainingMoneyToCarryOver: 0
     };
+  },
+  mounted() {
+    this.emitter.on("pay-off-all-minimum-amounts", () => {
+      this.payOffMinimumMonthlyInstallments();
+    });
+    this.emitter.on("add-item-debt", () => {
+      this.addItemDebt();
+    });
+    this.emitter.on("delete-item-debt", itemDebtIndex => {
+      this.deleteItemDebt(itemDebtIndex);
+    });
+    this.emitter.on("update-item-debt", update => {
+      this.updateItemDebt(update);
+    });
   },
   methods: {
     sortDebtsBasedOnAmount: function(debtA, debtB) {
@@ -121,11 +129,17 @@ export default {
     monthsTillSmallestDebtOutIfNoExtraMoney: function() {
       if (this.allDebtsAreDeletedOrPaidOff) return 0;
       let smallestDebt = this.activeDebts[0];
-      // installment never zero
+      // theoretically this should be an error... Zero's just a placeholder here.
+      if (smallestDebt.installment <= 0) return 0;
+      // installment never zero... ideally, unless the user tries very hard :)
       return Math.round(smallestDebt.amount / smallestDebt.installment);
     },
     monthsTillAllDebtOutIfNoExtraMoney: function() {
-      if (this.allDebtsAreDeletedOrPaidOff) return 0;
+      if (
+        this.allDebtsAreDeletedOrPaidOff ||
+        this.totalMinimumMonthlyPayment <= 0
+      )
+        return 0;
       // totalMinimumMonthlyPayment >= smallestDebt.installment > 0
       return Math.round(this.totalDebtSum / this.totalMinimumMonthlyPayment);
     },

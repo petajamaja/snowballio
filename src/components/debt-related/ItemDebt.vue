@@ -43,11 +43,7 @@
       <p>You paid this debt off completely!</p>
       <p>Total money paid : {{ totalPaid }}</p>
     </div>
-    <button
-      class="delete"
-      v-if="!debtIsPaidOff"
-      @click="$emit('delete-item-debt')"
-    >
+    <button class="delete" v-if="!debtIsPaidOff" @click="deleteItemDebt()">
       &#10006;
     </button>
   </div>
@@ -56,7 +52,7 @@
 <script>
 export default {
   name: "ItemDebt",
-  props: ["itemDebt", "thisIsTheMinimalDebt", "debtIsPaidOff"],
+  props: ["index", "itemDebt", "thisIsTheMinimalDebt", "debtIsPaidOff"],
   data() {
     return {
       id: this.itemDebt.id,
@@ -69,8 +65,16 @@ export default {
   },
   methods: {
     sendModifiedObjectUp: function() {
-      if (this.allFieldsPassValidation)
-        this.$emit("update-item-debt", this.$data);
+      if (this.allFieldsPassValidation) {
+        this.emitter.emit("update-item-debt", {
+          index: this.index,
+          updatedItem: this.$data
+        });
+      } else {
+      }
+    },
+    deleteItemDebt: function() {
+      this.emitter.emit("delete-item-debt", this.index);
     }
   },
   computed: {
