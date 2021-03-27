@@ -45,13 +45,13 @@
         </p>
         <div>
           <p>Already paid off:</p>
-          <p>{{ debtItem.totalPaid }}</p>
+          <p>{{ itemDebt.totalPaid }}</p>
         </div>
       </form>
     </div>
     <div v-else>
       <p>You paid this debt off completely!</p>
-      <p>Total money paid : {{ debtItem.totalPaid }}</p>
+      <p>Total money paid : {{ itemDebt.totalPaid }}</p>
     </div>
     <button class="delete" v-if="!debtIsPaidOff" @click="deleteItemDebt()">
       &#10006;
