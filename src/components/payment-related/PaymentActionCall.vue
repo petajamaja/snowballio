@@ -9,7 +9,7 @@
       <p>
         Minimum payment: <span class="number">{{ minimum }}</span>
       </p>
-      <button @click="$emit('pay-off-all-minimum-amounts')">PAY IT OFF!</button>
+      <button @click="payOffAllMinimumAmounts()">PAY IT OFF!</button>
     </div>
     <p>OR</p>
     <div class="extra-payment">
@@ -26,7 +26,12 @@
 <script>
 export default {
   name: "PaymentActionCall",
-  props: ["minimum", "allDebtIsPaidOff", "carryOverMoney", "allInputsCorrect"]
+  props: ["minimum", "allDebtIsPaidOff", "carryOverMoney", "allInputsCorrect"],
+  methods: {
+    payOffAllMinimumAmounts: function() {
+      this.emitter.emit("pay-off-all-minimum-amounts");
+    }
+  }
 };
 </script>
 
