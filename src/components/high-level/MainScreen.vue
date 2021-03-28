@@ -42,7 +42,7 @@ export default {
       ],
       paidOffDebts: [],
       installment: Number,
-      monthlyInstallments: [],
+      paymentHistory: [],
       sumToSpendEveryMonth: Number,
       remainingMoneyToCarryOver: 0,
       validationErrors: []
@@ -74,7 +74,10 @@ export default {
     },
     deleteItemDebt: function(debtIndex, debtId) {
       this.removeValidationErrors(debtId);
-      this.remainingMoneyToCarryOver += this.activeDebts[debtIndex].totalPaid;
+      if (this.activeDebts[debtIndex].totalPaid !== 0) {
+        this.removeAllRelatedPaymentHistory(debtId);
+        this.remainingMoneyToCarryOver += this.activeDebts[debtIndex].totalPaid;
+      }
       this.activeDebts.splice(debtIndex, 1);
     },
     addItemDebt: function() {
@@ -107,6 +110,11 @@ export default {
     reallocateCarryOverMoneyToFirstDebt: function() {
       let firstDebt = this.activeDebts[0];
       firstDebt.totalPaid += this.remainingMoneyToCarryOver;
+      this.saveToPaymentHistory(
+        this.remainingMoneyToCarryOver,
+        firstDebt.id,
+        "carry"
+      );
       this.remainingMoneyToCarryOver = 0;
       if (firstDebt.totalPaid >= firstDebt.amount) {
         this.payOffDebtAtIndex(0);
@@ -114,12 +122,80 @@ export default {
     },
     payOffMinimumDebtInstallment: function(debt, debtIndex) {
       debt.totalPaid += debt.installment;
+      this.saveToPaymentHistory(debt.installment, debt.id, "minimum");
       if (debt.totalPaid >= debt.amount) {
         this.payOffDebtAtIndex(debtIndex);
       }
     },
     payOffMinimumMonthlyInstallments: function() {
       this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
+    },
+    saveToPaymentHistory: function(amount, debtId, type) {
+      let today = new Date();
+      let currentMonth = today.getMonth();
+      let currentYear = today.getFullYear();
+      let paymentHistoryThisYear = this.paymentHistory.find(
+        yearPayments => yearPayments.year === currentYear
+      );
+      if (
+        paymentHistoryThisYear !== undefined &&
+        paymentHistoryThisYear !== null
+      ) {
+        let paymentHistoryThisMonth = paymentHistoryThisYear.paymentsMonthly.find(
+          monthPayments => monthPayments.month === currentMonth
+        );
+        if (
+          paymentHistoryThisMonth !== undefined &&
+          paymentHistoryThisYear !== null
+        ) {
+          // just add the payment to an existing month
+          paymentHistoryThisMonth.payments.push({
+            debtId: debtId,
+            amount: amount,
+            type: type
+          });
+        } else {
+          // add the month to an existing year
+          paymentHistoryThisYear.paymentsMonthly.push({
+            month: currentMonth,
+            payments: [
+              {
+                debtId: debtId,
+                amount: amount,
+                type: type
+              }
+            ]
+          });
+        }
+      } else {
+        // add the year to history
+        this.paymentHistory.push({
+          year: currentYear,
+          paymentsMonthly: [
+            {
+              month: currentMonth,
+              payments: [
+                {
+                  debtId: debtId,
+                  amount: amount,
+                  type: type
+                }
+              ]
+            }
+          ]
+        });
+      }
+    },
+    removeAllRelatedPaymentHistory: function(debtId) {
+      this.paymentHistory = this.paymentHistory.filter(year => {
+        year.paymentsMonthly = year.paymentsMonthly.filter(month => {
+          month.payments = month.payments.filter(
+            payment => payment.debtId !== debtId
+          );
+          return month.payments.length !== 0;
+        });
+        return year.paymentsMonthly.length !== 0;
+      });
     },
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
