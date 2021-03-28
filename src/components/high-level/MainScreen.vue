@@ -74,6 +74,7 @@ export default {
     },
     deleteItemDebt: function(debtIndex, debtId) {
       this.removeValidationErrors(debtId);
+      this.remainingMoneyToCarryOver += this.activeDebts[debtIndex].totalPaid;
       this.activeDebts.splice(debtIndex, 1);
     },
     addItemDebt: function() {
@@ -91,24 +92,30 @@ export default {
       this.activeDebts[update.index] = update.updatedItem;
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
     },
-    payOffDebtAtIndex: function(debt, debtIndex) {
-      this.remainingMoneyToCarryOver += debt.totalPaid - debt.amount;
-      debt.totalPaid = debt.amount;
-      let debtIsNotTheLastOne = this.activeDebts.length !== debtIndex + 1;
-      if (debtIsNotTheLastOne) {
-        this.activeDebts[
-          debtIndex + 1
-        ].totalPaid += this.remainingMoneyToCarryOver;
-      } else {
-        this.isAllDebtPaidOff = true;
-      }
-      this.paidOffDebts.push(this.activeDebts[debtIndex]);
+    payOffDebtAtIndex: function(debtIndex) {
+      let debtPaidOff = this.activeDebts[debtIndex];
+      this.remainingMoneyToCarryOver +=
+        debtPaidOff.totalPaid - debtPaidOff.amount;
+      debtPaidOff.totalPaid = debtPaidOff.amount;
+      this.paidOffDebts.push(debtPaidOff);
       this.deleteItemDebt(debtIndex);
+      let debtIsNotTheLastOne = this.activeDebts.length > 0;
+      if (debtIsNotTheLastOne) {
+        this.reallocateCarryOverMoneyToFirstDebt();
+      }
+    },
+    reallocateCarryOverMoneyToFirstDebt: function() {
+      let firstDebt = this.activeDebts[0];
+      firstDebt.totalPaid += this.remainingMoneyToCarryOver;
+      this.remainingMoneyToCarryOver = 0;
+      if (firstDebt.totalPaid >= firstDebt.amount) {
+        this.payOffDebtAtIndex(0);
+      }
     },
     payOffMinimumDebtInstallment: function(debt, debtIndex) {
       debt.totalPaid += debt.installment;
       if (debt.totalPaid >= debt.amount) {
-        this.payOffDebtAtIndex(debt, debtIndex);
+        this.payOffDebtAtIndex(debtIndex);
       }
     },
     payOffMinimumMonthlyInstallments: function() {
