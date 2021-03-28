@@ -75,7 +75,7 @@ export default {
     deleteItemDebt: function(debtIndex, debtId) {
       this.removeValidationErrors(debtId);
       if (this.activeDebts[debtIndex].totalPaid !== 0) {
-        this.removeAllRelatedPaymentHistory(debtId);
+        this.removeAllRelatedPaymentHistoryForDebt(debtId);
         this.remainingMoneyToCarryOver += this.activeDebts[debtIndex].totalPaid;
       }
       this.activeDebts.splice(debtIndex, 1);
@@ -186,7 +186,7 @@ export default {
         });
       }
     },
-    removeAllRelatedPaymentHistory: function(debtId) {
+    removeAllRelatedPaymentHistoryForDebt: function(debtId) {
       this.paymentHistory = this.paymentHistory.filter(year => {
         year.paymentsMonthly = year.paymentsMonthly.filter(month => {
           month.payments = month.payments.filter(
