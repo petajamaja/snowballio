@@ -6,6 +6,7 @@
         :carryOverMoney="remainingMoneyToCarryOver"
         :allInputsCorrect="allInputsCorrect"
         :allDebtIsPaidOff="allDebtIsPaidOff"
+        :monthlyMinimumPaid="monthlyMinimumPaid"
       />
       <AddNewDebtButton />
     </div>
@@ -43,12 +44,18 @@ export default {
       paidOffDebts: [],
       installment: Number,
       paymentHistory: [],
+      monthlyMinimumPaid: false,
+      lastMinimumPaymentDate: Date,
       sumToSpendEveryMonth: Number,
       remainingMoneyToCarryOver: 0,
       validationErrors: []
     };
   },
   mounted() {
+    this.lastMinimumPaymentDate = this.getLastMinimumPaymentDateFromLocalStorage();
+    // reset ability to make minimum payments if a new month has started
+    this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(new Date());
+
     this.emitter.on("there-is-error-in-debt", errenousDebtId => {
       this.validationErrors.push(errenousDebtId);
     });
@@ -129,6 +136,18 @@ export default {
     },
     payOffMinimumMonthlyInstallments: function() {
       this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
+      this.lastMinimumPaymentDate = new Date();
+      this.monthlyMinimumPaid = true;
+      localStorage.setItem("lastMinPaymentDate", this.lastMinimumPaymentDate);
+    },
+    minimumPaymentDoneThisMonth: function(currentDate) {
+      if (!this.lastMinimumPaymentDate) return true;
+      let currentMonth = currentDate.getMonth();
+      let currentYear = currentDate.getFullYear();
+      return (
+        currentYear === this.lastMinimumPaymentDate.getFullYear() &&
+        currentMonth === this.lastMinimumPaymentDate.getMonth()
+      );
     },
     saveToPaymentHistory: function(amount, debtId, type) {
       let today = new Date();
@@ -200,6 +219,9 @@ export default {
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
       if (index !== -1) this.validationErrors.splice(index, 1);
+    },
+    getLastMinimumPaymentDateFromLocalStorage: function() {
+      return new Date(localStorage.getItem("lastMinPaymentDate"));
     }
   },
   computed: {
