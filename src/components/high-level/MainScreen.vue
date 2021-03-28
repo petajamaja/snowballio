@@ -65,6 +65,9 @@ export default {
     this.emitter.on("pay-off-all-minimum-amounts", () => {
       this.payOffMinimumMonthlyInstallments();
     });
+    this.emitter.on("make-extra-payment", amount => {
+      this.makeExtraPayment(amount);
+    });
     this.emitter.on("add-item-debt", () => {
       this.addItemDebt();
     });
@@ -108,24 +111,26 @@ export default {
         debtPaidOff.totalPaid - debtPaidOff.amount;
       debtPaidOff.totalPaid = debtPaidOff.amount;
       this.paidOffDebts.push(debtPaidOff);
-      this.deleteItemDebt(debtIndex);
+      this.activeDebts.splice(debtIndex, 1);
       let debtIsNotTheLastOne = this.activeDebts.length > 0;
       if (debtIsNotTheLastOne) {
         this.reallocateCarryOverMoneyToFirstDebt();
       }
     },
-    reallocateCarryOverMoneyToFirstDebt: function() {
+    makePaymentOfType: function(type, amount) {
       let firstDebt = this.activeDebts[0];
-      firstDebt.totalPaid += this.remainingMoneyToCarryOver;
-      this.saveToPaymentHistory(
-        this.remainingMoneyToCarryOver,
-        firstDebt.id,
-        "carry"
-      );
+      firstDebt.totalPaid += amount;
+      this.saveToPaymentHistory(amount, firstDebt.id, type);
       this.remainingMoneyToCarryOver = 0;
       if (firstDebt.totalPaid >= firstDebt.amount) {
         this.payOffDebtAtIndex(0);
       }
+    },
+    reallocateCarryOverMoneyToFirstDebt: function() {
+      this.makePaymentOfType("carry", this.remainingMoneyToCarryOver);
+    },
+    makeExtraPayment: function(amount) {
+      this.makePaymentOfType("extra", amount);
     },
     payOffMinimumDebtInstallment: function(debt, debtIndex) {
       debt.totalPaid += debt.installment;
@@ -244,7 +249,7 @@ export default {
       if (this.allDebtsAreDeletedOrPaidOff || this.validationErrors.length)
         return 0;
       return this.activeDebts.reduce(function(accumulator, currentValue) {
-        return accumulator + currentValue.amount;
+        return accumulator + currentValue.amount - currentValue.totalPaid;
       }, 0);
     },
     monthsTillSmallestDebtOutIfNoExtraMoney: function() {
@@ -252,7 +257,10 @@ export default {
         return 0;
       let smallestDebt = this.activeDebts[0];
       // installment never zero, errors handled above
-      return Math.round(smallestDebt.amount / smallestDebt.installment);
+      return Math.ceil(
+        (smallestDebt.amount - smallestDebt.totalPaid) /
+          smallestDebt.installment
+      );
     },
     monthsTillAllDebtOutIfNoExtraMoney: function() {
       if (
@@ -261,7 +269,7 @@ export default {
       )
         return 0;
       // totalMinimumMonthlyPayment >= smallestDebt.installment > 0
-      return Math.round(this.totalDebtSum / this.totalMinimumMonthlyPayment);
+      return Math.ceil(this.totalDebtSum / this.totalMinimumMonthlyPayment);
     },
     allDebtIsPaidOff: function() {
       return this.activeDebts.length === 0 && this.paidOffDebts.length > 0;

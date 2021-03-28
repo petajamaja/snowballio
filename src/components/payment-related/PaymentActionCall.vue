@@ -16,8 +16,9 @@
     </div>
     <p>OR</p>
     <div class="extra-payment">
-      <input id="extra-amount" type="text" />
-      <button>MAKE EXTRA PAYMENT</button>
+      <input type="number" id="extra-amount" v-model.number="extraPayment" />
+      <p v-show="extraPayment <= 0" class="error">Amount must be positive!</p>
+      <button @click="makeExtraPayment()">MAKE EXTRA PAYMENT</button>
     </div>
   </div>
   <p v-else>
@@ -36,9 +37,18 @@ export default {
     "allInputsCorrect",
     "monthlyMinimumPaid"
   ],
+  data() {
+    return {
+      extraPayment: 0
+    };
+  },
   methods: {
     payOffAllMinimumAmounts: function() {
       this.emitter.emit("pay-off-all-minimum-amounts");
+    },
+    makeExtraPayment: function() {
+      if (this.extraPayment > 0)
+        this.emitter.emit("make-extra-payment", this.extraPayment);
     }
   }
 };
