@@ -36,8 +36,10 @@ export default {
           id: 0,
           description: "Placeholder debt",
           amount: 8000,
-          interest: 0,
+          annualInterestRate: 0,
           installment: 5000,
+          monthlyDueDate: 26,
+          fixedMonthlyFees: 30,
           totalPaid: 0
         }
       ],
@@ -95,8 +97,10 @@ export default {
         id: this.activeDebts.length,
         description: "New debt",
         amount: 8000,
-        interest: 0,
+        annualInterestRate: 0,
         installment: 5000,
+        monthlyDueDate: 26,
+        fixedMonthlyFees: 30,
         totalPaid: 0
       });
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);

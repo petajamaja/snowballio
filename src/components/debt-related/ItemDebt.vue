@@ -26,13 +26,6 @@
           v-model.number="debtItem.amount"
         />
         <p v-if="amountIsZero" class="error">Debt amount must be positive</p>
-        <label for="interest-input">Interest</label>
-        <input
-          type="number"
-          id="interest-input"
-          class="interest-input"
-          v-model.number="debtItem.interest"
-        />
         <label for="installment-input">Montly minimum payment</label>
         <input
           type="number"
@@ -43,6 +36,31 @@
         <p v-if="installmentIsZero && thisIsTheMinimalDebt" class="error">
           First debt payment must be positive!
         </p>
+        <InterestAccordion>
+          <form>
+            <label for="annual-interest-input">Annual interest:</label>
+            <input
+              type="number"
+              id="annual-interest-input"
+              class="annual-interest-input"
+              v-model.number="debtItem.annualInterestRate"
+            />
+            <label for="fixed-fees-input">Fixed fees: </label>
+            <input
+              type="number"
+              id="fixed-fees-input"
+              class="fixed-fees-input"
+              v-model.number="debtItem.fixedMonthlyFees"
+            />
+            <label for="due-date-input">Charged on: </label>
+            <input
+              type="number"
+              id="due-date-input"
+              class="due-date-input"
+              v-model.number="debtItem.monthlyDueDate"
+            />
+          </form>
+        </InterestAccordion>
         <div>
           <p>Already paid off:</p>
           <p>{{ itemDebt.totalPaid }}</p>
@@ -60,6 +78,7 @@
 </template>
 
 <script>
+import InterestAccordion from "./InterestAccordion.vue";
 export default {
   name: "ItemDebt",
   props: ["index", "itemDebt", "thisIsTheMinimalDebt", "debtIsPaidOff"],
@@ -69,8 +88,10 @@ export default {
         id: this.itemDebt.id,
         description: this.itemDebt.description,
         amount: this.itemDebt.amount,
-        interest: this.itemDebt.interest,
+        annualInterestRate: this.itemDebt.annualInterestRate,
         installment: this.itemDebt.installment,
+        monthlyDueDate: this.itemDebt.monthlyDueDate,
+        fixedMonthlyFees: this.itemDebt.fixedMonthlyFees,
         totalPaid: this.itemDebt.totalPaid
       },
       descriptionEditInputOpen: false
@@ -117,6 +138,9 @@ export default {
         !(this.installmentIsZero && this.thisIsTheMinimalDebt)
       );
     }
+  },
+  components: {
+    InterestAccordion
   }
 };
 </script>
