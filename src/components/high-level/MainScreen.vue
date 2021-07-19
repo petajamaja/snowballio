@@ -10,7 +10,11 @@
       />
       <AddNewDebtButton />
     </div>
-    <AllDebtsScreen :itemDebts="activeDebts" :paidOffDebts="paidOffDebts" />
+    <AllDebtsScreen
+      :itemDebts="activeDebts"
+      :today="today"
+      :paidOffDebts="paidOffDebts"
+    />
     <CalculatedTotals
       :totalDebtSum="totalDebtSum"
       :paidOff="totalPaidOff"
@@ -26,6 +30,7 @@ import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
 import PaymentActionCall from "../payment-related/PaymentActionCall.vue";
+import utils from "../../utils.js";
 
 export default {
   name: "MainScreen",
@@ -40,10 +45,13 @@ export default {
           installment: 5000,
           monthlyDueDate: 26,
           fixedMonthlyFees: 30,
-          totalPaid: 0
+          totalPaid: 0,
+          totalFeesPaid: 0,
+          totalInterestPaid: 0
         }
       ],
       paidOffDebts: [],
+      today: null,
       installment: Number,
       paymentHistory: [],
       monthlyMinimumPaid: false,
@@ -53,10 +61,13 @@ export default {
       validationErrors: []
     };
   },
-  mounted() {
-    this.lastMinimumPaymentDate = this.getLastMinimumPaymentDateFromLocalStorage();
+  created() {
+    this.today = new Date();
+    this.lastMinimumPaymentDate = new Date(
+      utils.getFromLocalStorage("lastMinPaymentDate")
+    );
     // reset ability to make minimum payments if a new month has started
-    this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(new Date());
+    this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(this.today);
 
     this.emitter.on("there-is-error-in-debt", errenousDebtId => {
       this.validationErrors.push(errenousDebtId);
@@ -70,6 +81,12 @@ export default {
     this.emitter.on("make-extra-payment", amount => {
       this.makeExtraPayment(amount);
     });
+    this.emitter.on(
+      "charge-interest-for-debt",
+      ({ debtIndex, chargeDate, sum }) => {
+        this.chargeInterestForDebt(debtIndex, chargeDate, sum);
+      }
+    );
     this.emitter.on("add-item-debt", () => {
       this.addItemDebt();
     });
@@ -101,7 +118,9 @@ export default {
         installment: 5000,
         monthlyDueDate: 26,
         fixedMonthlyFees: 30,
-        totalPaid: 0
+        totalPaid: 0,
+        totalFeesPaid: 0,
+        totalInterestPaid: 0
       });
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
     },
@@ -158,10 +177,20 @@ export default {
         currentMonth === this.lastMinimumPaymentDate.getMonth()
       );
     },
+    chargeInterestForDebt: function(debtIndex, chargeDate, sum) {
+      let debt = this.activeDebts[debtIndex];
+      debt.totalInterestPaid += sum;
+      debt.totalFeesPaid += debt.fixedMonthlyFees;
+      utils.saveToLocalStorage(
+        "lastInterestChargeDateForDebt" + debtIndex,
+        chargeDate
+      );
+    },
     saveToPaymentHistory: function(amount, debtId, type) {
-      let today = new Date();
-      let currentMonth = today.getMonth();
-      let currentYear = today.getFullYear();
+      // this is when there is no interest
+      if (type === "interest" && amount === 0) return;
+      let currentMonth = this.today.getMonth();
+      let currentYear = this.today.getFullYear();
       let paymentHistoryThisYear = this.paymentHistory.find(
         yearPayments => yearPayments.year === currentYear
       );
@@ -228,9 +257,6 @@ export default {
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
       if (index !== -1) this.validationErrors.splice(index, 1);
-    },
-    getLastMinimumPaymentDateFromLocalStorage: function() {
-      return new Date(localStorage.getItem("lastMinPaymentDate"));
     }
   },
   computed: {

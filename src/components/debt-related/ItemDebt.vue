@@ -65,6 +65,14 @@
           <p>Already paid off:</p>
           <p>{{ itemDebt.totalPaid }}</p>
         </div>
+        <div v-if="debtItem.annualInterestRate !== 0">
+          <p>Total interest paid:</p>
+          <p>{{ itemDebt.totalInterestPaid }}</p>
+        </div>
+        <div v-if="debtItem.annualInterestRate !== 0">
+          <p>Total fees paid:</p>
+          <p>{{ itemDebt.totalFeesPaid }}</p>
+        </div>
       </form>
     </div>
     <div v-else>
@@ -79,9 +87,17 @@
 
 <script>
 import InterestAccordion from "./InterestAccordion.vue";
+import utils from "../../utils.js";
+
 export default {
   name: "ItemDebt",
-  props: ["index", "itemDebt", "thisIsTheMinimalDebt", "debtIsPaidOff"],
+  props: [
+    "index",
+    "today",
+    "itemDebt",
+    "thisIsTheMinimalDebt",
+    "debtIsPaidOff"
+  ],
   data() {
     return {
       debtItem: {
@@ -92,10 +108,29 @@ export default {
         installment: this.itemDebt.installment,
         monthlyDueDate: this.itemDebt.monthlyDueDate,
         fixedMonthlyFees: this.itemDebt.fixedMonthlyFees,
-        totalPaid: this.itemDebt.totalPaid
+        totalPaid: this.itemDebt.totalPaid,
+        totalFeesPaid: this.itemDebt.totalFeesPaid,
+        totalInterestPaid: this.itemDebt.totalInterestPaid
       },
-      descriptionEditInputOpen: false
+      descriptionEditInputOpen: false,
+      lastInterestChargeDate: null
     };
+  },
+  created() {
+    // if no interest has been charged before, it will remain not identified
+    let lastInterestCharged = utils.getFromLocalStorage(
+      "lastInterestChargeDateForDebt" + this.debtItem.id
+    );
+    if (lastInterestCharged !== null) {
+      this.lastInterestChargeDate = new Date(lastInterestCharged);
+    }
+    if (this.shouldChargeInterest(this.today)) {
+      this.emitter.emit("charge-interest-for-debt", {
+        debtIndex: this.index,
+        chargeDate: this.today,
+        sum: this.monthlyInterest
+      });
+    }
   },
   watch: {
     thisIsTheMinimalDebt: function() {
@@ -123,6 +158,17 @@ export default {
     },
     toggleDescriptionEdit: function() {
       this.descriptionEditInputOpen = !this.descriptionEditInputOpen;
+    },
+    /**
+     * Under assumption that the user logs in at least once per month
+     */
+    shouldChargeInterest: function(today) {
+      return (
+        (this.lastInterestChargeDate === null ||
+          today.getMonth() > this.lastInterestChargeDate.getMonth() ||
+          today.getYear() > this.lastInterestChargeDate.getYear()) &&
+        today.getDate() >= this.debtItem.monthlyDueDate
+      );
     }
   },
   computed: {
@@ -137,6 +183,26 @@ export default {
         !this.amountIsZero &&
         !(this.installmentIsZero && this.thisIsTheMinimalDebt)
       );
+    },
+    monthlyInterestRate: function() {
+      return this.debtItem.annualInterestRate / 100 / 12;
+    },
+    /**
+     * Actual amount remaining to be paid + the next fee
+     */
+    balance: function() {
+      return (
+        this.debtItem.amount -
+        this.debtItem.totalPaid +
+        this.debtItem.totalInterestPaid +
+        this.debtItem.totalFeesPaid
+      );
+    },
+    /**
+     * Calculated strictly based on the monthly balance
+     */
+    monthlyInterest: function() {
+      return this.monthlyInterestRate * this.balance;
     }
   },
   components: {

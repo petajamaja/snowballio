@@ -3,6 +3,7 @@
     <ItemDebt
       v-for="(itemDebt, index) in itemDebts"
       :index="index"
+      :today="today"
       :key="itemDebt.id"
       :itemDebt="itemDebt"
       :thisIsTheMinimalDebt="index === 0"
@@ -13,6 +14,7 @@
     <ItemDebt
       v-for="(itemDebt, index) in paidOffDebts"
       :index="index"
+      :today="today"
       :key="itemDebt.id"
       :itemDebt="itemDebt"
       :debtIsPaidOff="true"
@@ -25,7 +27,7 @@
 import ItemDebt from "./ItemDebt.vue";
 export default {
   name: "AllDebtsScreen",
-  props: ["itemDebts", "paidOffDebts"],
+  props: ["itemDebts", "paidOffDebts", "today"],
   components: {
     ItemDebt
   }
