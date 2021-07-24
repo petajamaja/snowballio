@@ -169,6 +169,11 @@ export default {
           today.getYear() > this.lastInterestChargeDate.getYear()) &&
         today.getDate() >= this.debtItem.monthlyDueDate
       );
+    },
+    timeTillPaidOffRecursive: function(balance, rate, installment, fees, months){
+      if(balance<=0) return months;
+      let newBalance = balance - installment + rate * balance + fees;
+      return this.timeTillPaidOffRecursive(newBalance, rate, installment, fees, months+1);
     }
   },
   computed: {
@@ -204,6 +209,10 @@ export default {
      */
     monthlyInterest: function() {
       return this.monthlyInterestRate * this.balance;
+    },
+    timeTillPaidOff: function() {
+      return this.timeTillPaidOffRecursive(this.balance, this.monthlyInterestRate,
+             this.debtItem.installment, this.debtItem.fixedMonthlyFees, 0);
     }
   },
   components: {
