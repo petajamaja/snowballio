@@ -185,7 +185,8 @@ export default {
       );
     },
     monthlyInterestRate: function() {
-      return this.debtItem.annualInterestRate / 100 / 12;
+      let toBeRounded = this.debtItem.annualInterestRate / 100 / 12;
+      return Math.round((toBeRounded + Number.EPSILON) * 1000) / 1000;
     },
     /**
      * Actual amount remaining to be paid + the next fee

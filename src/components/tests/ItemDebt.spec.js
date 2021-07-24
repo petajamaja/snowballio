@@ -1,7 +1,8 @@
 import { mount } from "@vue/test-utils";
 import ItemDebt from "../debt-related/ItemDebt.vue";
+import {nextTick} from "vue";
 
-describe("ItemDebt", () => {
+describe("shouldChargeInterest() function", () => {
   const placeholderDebt = {
     id: 0,
     description: "New debt",
@@ -15,80 +16,52 @@ describe("ItemDebt", () => {
     totalInterestPaid: 0
   };
 
-  it("charges fee correctly if no previous payments exist", () => {
+  const wrapper = mount(ItemDebt, {
+    propsData: {
+      index: 0,
+      thisIsTheMinimalDebt: true,
+      debtIsPaidOff: false,
+      itemDebt: placeholderDebt,
+      today: new Date()
+    },
+    data() {
+      return {
+        descriptionEditInputOpen: false,
+        lastInterestChargeDate: null
+      };
+    }
+  });
+
+  async function checkDate(lastPaymentDate, dateBeforeDueDate, dateOnDueDate, dateAfterDueDate){
+    wrapper.setData({ lastInterestChargeDate: lastPaymentDate});
+    nextTick(() => { 
+      expect(wrapper.vm.lastInterestChargeDate).toBe(lastPaymentDate);
+      expect(wrapper.vm.shouldChargeInterest(dateBeforeDueDate)).toBe(false);
+      expect(wrapper.vm.shouldChargeInterest(dateOnDueDate)).toBe(true);
+      expect(wrapper.vm.shouldChargeInterest(dateAfterDueDate)).toBe(true);
+    });
+  }
+
+  it("charges fee correctly if no previous payments exist", async () => {
     const dateBeforeDueDate = new Date(2021, 7, 4);
     const dateOnDueDate = new Date(2021, 7, 5);
     const dateAfterDueDate = new Date(2021, 7, 10);
-
-    const wrapper = mount(ItemDebt, {
-      propsData: {
-        index: 0,
-        thisIsTheMinimalDebt: true,
-        debtIsPaidOff: false,
-        itemDebt: placeholderDebt,
-        today: new Date()
-      },
-      data() {
-        return {
-          descriptionEditInputOpen: false,
-          lastInterestChargeDate: null
-        };
-      }
-    });
-    expect(wrapper.vm.shouldChargeInterest(dateBeforeDueDate)).toBe(false);
-    expect(wrapper.vm.shouldChargeInterest(dateOnDueDate)).toBe(true);
-    expect(wrapper.vm.shouldChargeInterest(dateAfterDueDate)).toBe(true);
+    checkDate(null, dateBeforeDueDate, dateOnDueDate, dateAfterDueDate);
   });
 
-  it("charges fee correctly if month is next after last payment", () => {
+  it("charges fee correctly if month is next after last payment", async () => {
     const lastPaymentDate = new Date(2021, 6, 5);
     const dateBeforeDueDate = new Date(2021, 7, 4);
     const dateOnDueDate = new Date(2021, 7, 5);
     const dateAfterDueDate = new Date(2021, 7, 10);
-
-    const wrapper = mount(ItemDebt, {
-      propsData: {
-        index: 0,
-        thisIsTheMinimalDebt: true,
-        debtIsPaidOff: false,
-        itemDebt: placeholderDebt,
-        today: new Date()
-      },
-      data() {
-        return {
-          descriptionEditInputOpen: false,
-          lastInterestChargeDate: lastPaymentDate
-        };
-      }
-    });
-    expect(wrapper.vm.shouldChargeInterest(dateBeforeDueDate)).toBe(false);
-    expect(wrapper.vm.shouldChargeInterest(dateOnDueDate)).toBe(true);
-    expect(wrapper.vm.shouldChargeInterest(dateAfterDueDate)).toBe(true);
+    checkDate(lastPaymentDate, dateBeforeDueDate, dateOnDueDate, dateAfterDueDate);
   });
 
-  it("charges fee correctly if it is next year", () => {
+  it("charges fee correctly if it is next year", async () => {
     const lastPaymentDate = new Date(2021, 12, 5);
     const dateBeforeDueDate = new Date(2022, 1, 4);
     const dateOnDueDate = new Date(2022, 1, 5);
     const dateAfterDueDate = new Date(2022, 1, 10);
-
-    const wrapper = mount(ItemDebt, {
-      propsData: {
-        index: 0,
-        thisIsTheMinimalDebt: true,
-        debtIsPaidOff: false,
-        itemDebt: placeholderDebt,
-        today: new Date()
-      },
-      data() {
-        return {
-          descriptionEditInputOpen: false,
-          lastInterestChargeDate: lastPaymentDate
-        };
-      }
-    });
-    expect(wrapper.vm.shouldChargeInterest(dateBeforeDueDate)).toBe(false);
-    expect(wrapper.vm.shouldChargeInterest(dateOnDueDate)).toBe(true);
-    expect(wrapper.vm.shouldChargeInterest(dateAfterDueDate)).toBe(true);
+    checkDate(lastPaymentDate, dateBeforeDueDate, dateOnDueDate, dateAfterDueDate);
   });
 });
