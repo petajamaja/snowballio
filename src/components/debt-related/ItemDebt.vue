@@ -170,10 +170,34 @@ export default {
         today.getDate() >= this.debtItem.monthlyDueDate
       );
     },
-    timeTillPaidOffRecursive: function(balance, rate, installment, fees, months){
-      if(balance<=0) return months;
+    timeTillPaidOffRecursive: function(
+      balance,
+      rate,
+      installment,
+      fees,
+      months
+    ) {
+      if (balance <= 0) return months;
       let newBalance = balance - installment + rate * balance + fees;
-      return this.timeTillPaidOffRecursive(newBalance, rate, installment, fees, months+1);
+      return this.timeTillPaidOffRecursive(
+        newBalance,
+        rate,
+        installment,
+        fees,
+        months + 1
+      );
+    },
+    amountPaidByMonth: function(month) {
+      return this.paymentCalendar.reduce((amount, payment, index) => {
+        if (index < month) {
+          amount = parseFloat((amount + payment.installment).toPrecision(10));
+          if (payment.fees && payment.interest)
+            amount = parseFloat(
+              (amount + payment.fees + payment.interest).toPrecision(10)
+            );
+        }
+        return amount;
+      }, 0);
     }
   },
   computed: {
@@ -211,8 +235,55 @@ export default {
       return this.monthlyInterestRate * this.balance;
     },
     timeTillPaidOff: function() {
-      return this.timeTillPaidOffRecursive(this.balance, this.monthlyInterestRate,
-             this.debtItem.installment, this.debtItem.fixedMonthlyFees, 0);
+      return this.timeTillPaidOffRecursive(
+        this.balance,
+        this.monthlyInterestRate,
+        this.debtItem.installment,
+        this.debtItem.fixedMonthlyFees,
+        0
+      );
+    },
+    /**
+     * Generates a payment calendar for loans with interest.
+     * Only takes into account the remaining months, what's paid
+     * is already paid!
+     */
+    paymentCalendar: function() {
+      let calendar = [];
+      let month = 0;
+      let balanceCopy = this.balance;
+
+      while (balanceCopy > 0) {
+        calendar[month] = {
+          installment: this.debtItem.installment
+        };
+        if (balanceCopy <= this.debtItem.installment) {
+          calendar[month].installment = balanceCopy;
+          calendar[month].carryOver = parseFloat(
+            (this.debtItem.installment - balanceCopy).toPrecision(10)
+          );
+          break;
+        }
+        if (this.debtItem.annualInterestRate !== 0) {
+          let interest = parseFloat(
+            (balanceCopy * this.monthlyInterestRate).toPrecision(10)
+          );
+          calendar[month].interest = interest;
+          calendar[month].fees = this.debtItem.fixedMonthlyFees;
+          balanceCopy = parseFloat(
+            (
+              balanceCopy -
+              this.debtItem.installment +
+              interest +
+              this.debtItem.fixedMonthlyFees
+            ).toPrecision(10)
+          );
+        } else {
+          balanceCopy = balanceCopy - this.debtItem.installment;
+        }
+        month++;
+      }
+      return calendar;
     }
   },
   components: {
