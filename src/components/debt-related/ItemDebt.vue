@@ -170,23 +170,6 @@ export default {
         today.getDate() >= this.debtItem.monthlyDueDate
       );
     },
-    timeTillPaidOffRecursive: function(
-      balance,
-      rate,
-      installment,
-      fees,
-      months
-    ) {
-      if (balance <= 0) return months;
-      let newBalance = balance - installment + rate * balance + fees;
-      return this.timeTillPaidOffRecursive(
-        newBalance,
-        rate,
-        installment,
-        fees,
-        months + 1
-      );
-    },
     amountPaidByMonth: function(month) {
       return this.paymentCalendar.reduce((amount, payment, index) => {
         if (index < month) {
@@ -235,13 +218,7 @@ export default {
       return this.monthlyInterestRate * this.balance;
     },
     timeTillPaidOff: function() {
-      return this.timeTillPaidOffRecursive(
-        this.balance,
-        this.monthlyInterestRate,
-        this.debtItem.installment,
-        this.debtItem.fixedMonthlyFees,
-        0
-      );
+      return this.paymentCalendar.length;
     },
     /**
      * Generates a payment calendar for loans with interest.
