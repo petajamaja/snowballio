@@ -87,6 +87,7 @@
 
 <script>
 import InterestAccordion from "./InterestAccordion.vue";
+import PaymentCalendar from "../payment-related/PaymentCalendar.js";
 import utils from "../../utils.js";
 
 export default {
@@ -171,16 +172,7 @@ export default {
       );
     },
     amountPaidByMonth: function(month) {
-      return this.paymentCalendar.reduce((amount, payment, index) => {
-        if (index < month) {
-          amount = parseFloat((amount + payment.installment).toPrecision(10));
-          if (payment.fees && payment.interest)
-            amount = parseFloat(
-              (amount + payment.fees + payment.interest).toPrecision(10)
-            );
-        }
-        return amount;
-      }, 0);
+      return this.paymentCalendar.getAmountPaidByMonth(month);
     }
   },
   computed: {
@@ -218,7 +210,7 @@ export default {
       return this.monthlyInterestRate * this.balance;
     },
     timeTillPaidOff: function() {
-      return this.paymentCalendar.length;
+      return this.paymentCalendar.getRemainingTime();
     },
     /**
      * Generates a payment calendar for loans with interest.
@@ -226,41 +218,7 @@ export default {
      * is already paid!
      */
     paymentCalendar: function() {
-      let calendar = [];
-      let month = 0;
-      let balanceCopy = this.balance;
-
-      while (balanceCopy > 0) {
-        calendar[month] = {
-          installment: this.debtItem.installment
-        };
-        if (balanceCopy <= this.debtItem.installment) {
-          calendar[month].installment = balanceCopy;
-          calendar[month].carryOver = parseFloat(
-            (this.debtItem.installment - balanceCopy).toPrecision(10)
-          );
-          break;
-        }
-        if (this.debtItem.annualInterestRate !== 0) {
-          let interest = parseFloat(
-            (balanceCopy * this.monthlyInterestRate).toPrecision(10)
-          );
-          calendar[month].interest = interest;
-          calendar[month].fees = this.debtItem.fixedMonthlyFees;
-          balanceCopy = parseFloat(
-            (
-              balanceCopy -
-              this.debtItem.installment +
-              interest +
-              this.debtItem.fixedMonthlyFees
-            ).toPrecision(10)
-          );
-        } else {
-          balanceCopy = balanceCopy - this.debtItem.installment;
-        }
-        month++;
-      }
-      return calendar;
+      return new PaymentCalendar(this.debtItem);
     }
   },
   components: {

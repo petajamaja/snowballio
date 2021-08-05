@@ -179,8 +179,8 @@ describe("paymentCalendar() function", () => {
   ];
 
   it("correctly generates payment calendar from month 1 to month 6", () => {
-    let calendarGenerated = wrapper.vm.paymentCalendar;
-    expect(calendarGenerated.length).toBe(6);
+    let calendarGenerated = wrapper.vm.paymentCalendar.getCalendar();
+    expect(wrapper.vm.paymentCalendar.getRemainingTime()).toBe(6);
     expect(calendarGenerated[0].installment).toBe(calendar[0].installment);
     expect(calendarGenerated[0].interest).toBe(calendar[0].interest);
     expect(calendarGenerated[1].interest).toBe(calendar[1].interest);
@@ -202,39 +202,25 @@ describe("paymentCalendar() function", () => {
   });
 
   it("correctly generates payment calendar for debts with no interest", () => {
+    let calendarGenerated = noInterestWrapper.vm.paymentCalendar.getCalendar();
     expect(noInterestWrapper.vm.debtItem.annualInterestRate).toBe(0);
-    expect(noInterestWrapper.vm.paymentCalendar.length).toBe(5);
+    expect(noInterestWrapper.vm.paymentCalendar.getRemainingTime()).toBe(5);
     expect(
-      Object.prototype.hasOwnProperty.call(
-        noInterestWrapper.vm.paymentCalendar[0],
-        "interest"
-      )
+      Object.prototype.hasOwnProperty.call(calendarGenerated[0], "interest")
     ).toBe(false);
     expect(
-      Object.prototype.hasOwnProperty.call(
-        noInterestWrapper.vm.paymentCalendar[1],
-        "interest"
-      )
+      Object.prototype.hasOwnProperty.call(calendarGenerated[1], "interest")
     ).toBe(false);
     expect(
-      Object.prototype.hasOwnProperty.call(
-        noInterestWrapper.vm.paymentCalendar[2],
-        "interest"
-      )
+      Object.prototype.hasOwnProperty.call(calendarGenerated[2], "interest")
     ).toBe(false);
     expect(
-      Object.prototype.hasOwnProperty.call(
-        noInterestWrapper.vm.paymentCalendar[3],
-        "interest"
-      )
+      Object.prototype.hasOwnProperty.call(calendarGenerated[3], "interest")
     ).toBe(false);
     expect(
-      Object.prototype.hasOwnProperty.call(
-        noInterestWrapper.vm.paymentCalendar[4],
-        "interest"
-      )
+      Object.prototype.hasOwnProperty.call(calendarGenerated[4], "interest")
     ).toBe(false);
-    expect(noInterestWrapper.vm.paymentCalendar[4].installment).toBe(6);
+    expect(calendarGenerated[4].installment).toBe(6);
   });
 });
 
