@@ -187,7 +187,6 @@ describe("paymentCalendar() function", () => {
     expect(calendarGenerated[2].interest).toBe(calendar[2].interest);
     expect(calendarGenerated[3].interest).toBe(calendar[3].interest);
     expect(calendarGenerated[4].interest).toBe(calendar[4].interest);
-    expect(calendarGenerated[5].interest).toBe(calendar[5].interest);
     expect(
       Object.prototype.hasOwnProperty.call(calendarGenerated[5], "interest")
     ).toBe(false);

@@ -30,6 +30,7 @@ import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
 import PaymentActionCall from "../payment-related/PaymentActionCall.vue";
+import PaymentCalendar from "../payment-related/PaymentCalendar.js";
 import utils from "../../utils.js";
 
 export default {
@@ -52,11 +53,9 @@ export default {
       ],
       paidOffDebts: [],
       today: null,
-      installment: Number,
       paymentHistory: [],
       monthlyMinimumPaid: false,
-      lastMinimumPaymentDate: Date,
-      sumToSpendEveryMonth: Number,
+      lastMinimumPaymentDate: null,
       remainingMoneyToCarryOver: 0,
       validationErrors: []
     };
@@ -298,8 +297,27 @@ export default {
         this.totalMinimumMonthlyPayment <= 0
       )
         return 0;
-      // totalMinimumMonthlyPayment >= smallestDebt.installment > 0
-      return Math.ceil(this.totalDebtSum / this.totalMinimumMonthlyPayment);
+      let debtsCopy = JSON.parse(JSON.stringify(this.activeDebts));
+      let totalTime = 0;
+      for (let index = 0; index < debtsCopy.length; index++) {
+        let debt = debtsCopy[index];
+        let initialInstallment = debt.installment;
+        let paymentPlan = new PaymentCalendar(debt);
+        // only add time if there are actual installments to be made!
+        if (!paymentPlan.hasOnlyCarryOver()) {
+          totalTime += paymentPlan.getRemainingTime();
+        }
+        if (index != debtsCopy.length - 1) {
+          let nextDebt = debtsCopy[index + 1];
+          let nextDebtPaymentPlan = new PaymentCalendar(nextDebt);
+          nextDebt.totalPaid += nextDebtPaymentPlan.getAmountPaidByMonth(
+            totalTime
+          );
+          nextDebt.totalPaid += paymentPlan.getCarryOver();
+          nextDebt.installment += initialInstallment;
+        }
+      }
+      return totalTime;
     },
     allDebtIsPaidOff: function() {
       return this.activeDebts.length === 0 && this.paidOffDebts.length > 0;

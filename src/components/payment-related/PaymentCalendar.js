@@ -16,6 +16,11 @@ export default class PaymentCalendar {
     let calendar = [];
     let month = 0;
 
+    if (balance < 0) {
+      calendar = [{ installment: 0, carryOver: -balance }];
+      return calendar;
+    }
+
     while (balance > 0) {
       calendar[month] = {
         installment: this.debtItem.installment
@@ -58,9 +63,9 @@ export default class PaymentCalendar {
   }
 
   getCarryOver() {
-    return this.calendar[this.calendar.length-1].carryOver;
+    return this.calendar[this.calendar.length - 1].carryOver;
   }
-  
+
   getAmountPaidByMonth(month) {
     return this.calendar.reduce((amount, payment, index) => {
       if (index < month) {
@@ -72,5 +77,12 @@ export default class PaymentCalendar {
       }
       return amount;
     }, 0);
+  }
+
+  hasOnlyCarryOver() {
+    return (
+      this.calendar[this.calendar.length - 1].installment === 0 &&
+      this.calendar[this.calendar.length - 1].carryOver !== 0
+    );
   }
 }
