@@ -4,5 +4,8 @@ export default {
   },
   saveToLocalStorage(name, value) {
     localStorage.setItem(name, value);
+  },
+  deepCopy(object) {
+    return JSON.parse(JSON.stringify(object));
   }
 };

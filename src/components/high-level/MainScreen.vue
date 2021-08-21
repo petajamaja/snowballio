@@ -124,7 +124,7 @@ export default {
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
     },
     updateItemDebt: function(update) {
-      this.activeDebts[update.index] = update.updatedItem;
+      this.activeDebts[update.index] = utils.deepCopy(update.updatedItem);
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
     },
     payOffDebtAtIndex: function(debtIndex) {
@@ -297,7 +297,7 @@ export default {
         this.totalMinimumMonthlyPayment <= 0
       )
         return 0;
-      let debtsCopy = JSON.parse(JSON.stringify(this.activeDebts));
+      let debtsCopy = utils.deepCopy(this.activeDebts);
       let totalTime = 0;
       for (let index = 0; index < debtsCopy.length; index++) {
         let debt = debtsCopy[index];

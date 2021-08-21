@@ -101,18 +101,7 @@ export default {
   ],
   data() {
     return {
-      debtItem: {
-        id: this.itemDebt.id,
-        description: this.itemDebt.description,
-        amount: this.itemDebt.amount,
-        annualInterestRate: this.itemDebt.annualInterestRate,
-        installment: this.itemDebt.installment,
-        monthlyDueDate: this.itemDebt.monthlyDueDate,
-        fixedMonthlyFees: this.itemDebt.fixedMonthlyFees,
-        totalPaid: this.itemDebt.totalPaid,
-        totalFeesPaid: this.itemDebt.totalFeesPaid,
-        totalInterestPaid: this.itemDebt.totalInterestPaid
-      },
+      debtItem: utils.deepCopy(this.itemDebt),
       descriptionEditInputOpen: false,
       lastInterestChargeDate: null
     };
