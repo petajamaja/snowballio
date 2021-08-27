@@ -25,7 +25,9 @@
           class="amount-input"
           v-model.number="debtItem.amount"
         />
-        <p v-if="amountIsZero" class="error">Debt amount must be positive</p>
+        <p v-if="amountIsZeroOrLess" class="error">
+          Debt amount must be positive
+        </p>
         <label for="installment-input">Montly minimum payment</label>
         <input
           type="number"
@@ -33,8 +35,17 @@
           class="installment-input"
           v-model.number="debtItem.installment"
         />
-        <p v-if="installmentIsZero && thisIsTheMinimalDebt" class="error">
+        <p v-if="installmentIsZeroOrLess && thisIsTheMinimalDebt" class="error">
           First debt payment must be positive!
+        </p>
+        <p
+          v-if="
+            (installmentIsEmpty || installmentIsLessThanZero) &&
+              !thisIsTheMinimalDebt
+          "
+          class="error"
+        >
+          Payment must be zero or more!
         </p>
         <InterestAccordion>
           <form>
@@ -63,21 +74,21 @@
         </InterestAccordion>
         <div>
           <p>Already paid off:</p>
-          <p>{{ itemDebt.totalPaid }}</p>
+          <p>{{ debtItem.totalPaid }}</p>
         </div>
         <div v-if="debtItem.annualInterestRate !== 0">
           <p>Total interest paid:</p>
-          <p>{{ itemDebt.totalInterestPaid }}</p>
+          <p>{{ debtItem.totalInterestPaid }}</p>
         </div>
         <div v-if="debtItem.annualInterestRate !== 0">
           <p>Total fees paid:</p>
-          <p>{{ itemDebt.totalFeesPaid }}</p>
+          <p>{{ debtItem.totalFeesPaid }}</p>
         </div>
       </form>
     </div>
     <div v-else>
       <p>You paid this debt off completely!</p>
-      <p>Total money paid : {{ itemDebt.totalPaid }}</p>
+      <p>Total money paid : {{ debtItem.totalPaid }}</p>
     </div>
     <button class="delete" v-if="!debtIsPaidOff" @click="deleteItemDebt()">
       &#10006;
@@ -161,20 +172,35 @@ export default {
       );
     },
     amountPaidByMonth: function(month) {
+      if (this.amountIsZeroOrLess) {
+        return undefined;
+      }
       return this.paymentCalendar.getAmountPaidByMonth(month);
     }
   },
   computed: {
-    amountIsZero: function() {
-      return this.debtItem.amount === 0;
+    amountIsZeroOrLess: function() {
+      return this.debtItem.amount <= 0;
     },
-    installmentIsZero: function() {
-      return this.debtItem.installment === 0;
+    amountIsEmpty: function() {
+      return this.debtItem.amount === "";
+    },
+    installmentIsZeroOrLess: function() {
+      return this.debtItem.installment <= 0;
+    },
+    installmentIsEmpty: function() {
+      return this.debtItem.installment === "";
+    },
+    installmentIsLessThanZero: function() {
+      return this.debtItem.installment < 0;
     },
     allFieldsPassValidation: function() {
       return (
-        !this.amountIsZero &&
-        !(this.installmentIsZero && this.thisIsTheMinimalDebt)
+        !this.amountIsZeroOrLess &&
+        !this.amountIsEmpty &&
+        !this.installmentIsEmpty &&
+        !this.installmentIsLessThanZero &&
+        !(this.installmentIsZeroOrLess && this.thisIsTheMinimalDebt)
       );
     },
     monthlyInterestRate: function() {
@@ -199,6 +225,9 @@ export default {
       return this.monthlyInterestRate * this.balance;
     },
     timeTillPaidOff: function() {
+      if (this.amountIsZeroOrLess) {
+        return undefined;
+      }
       return this.paymentCalendar.getRemainingTime();
     },
     /**
@@ -207,6 +236,9 @@ export default {
      * is already paid!
      */
     paymentCalendar: function() {
+      if (this.amountIsZeroOrLess) {
+        return {};
+      }
       return new PaymentCalendar(this.debtItem);
     }
   },
@@ -287,6 +319,18 @@ input:focus {
   padding-right: 10px;
   align-content: center;
 }
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 button {
   background-color: #798595;
   color: #ffe0cb;

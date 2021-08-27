@@ -16,7 +16,11 @@ export default class PaymentCalendar {
     let calendar = [];
     let month = 0;
 
-    if (balance < 0) {
+    if (this.debtItem.installment === 0) {
+      return calendar;
+    }
+
+    if (balance <= 0) {
       calendar = [{ installment: 0, carryOver: -balance }];
       return calendar;
     }
@@ -59,14 +63,20 @@ export default class PaymentCalendar {
   }
 
   getRemainingTime() {
-    return this.calendar.length;
+    // if the minimum monthly installment is zero, paying off will be infinite until changed
+    if (this.calendar.length === 0) return Infinity;
+    if (this.calendar[this.calendar.length - 1].installment !== 0)
+      return this.calendar.length;
+    else return this.calendar.length - 1;
   }
 
   getCarryOver() {
+    if (this.calendar.length === 0) return 0;
     return this.calendar[this.calendar.length - 1].carryOver;
   }
 
   getAmountPaidByMonth(month) {
+    if (this.calendar.length === 0) return 0;
     return this.calendar.reduce((amount, payment, index) => {
       if (index < month) {
         amount = parseFloat((amount + payment.installment).toPrecision(10));
@@ -80,6 +90,7 @@ export default class PaymentCalendar {
   }
 
   hasOnlyCarryOver() {
+    if (this.calendar.length === 0) return false;
     return (
       this.calendar[this.calendar.length - 1].installment === 0 &&
       this.calendar[this.calendar.length - 1].carryOver !== 0

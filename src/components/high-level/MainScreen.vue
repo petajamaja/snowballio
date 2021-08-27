@@ -69,7 +69,8 @@ export default {
     this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(this.today);
 
     this.emitter.on("there-is-error-in-debt", errenousDebtId => {
-      this.validationErrors.push(errenousDebtId);
+      let index = this.validationErrors.indexOf(errenousDebtId);
+      if (index === -1) this.validationErrors.push(errenousDebtId);
     });
     this.emitter.on("removed-error-in-debt", debtId => {
       this.removeValidationErrors(debtId);
