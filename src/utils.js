@@ -3,6 +3,7 @@ export default {
     return localStorage.getItem(name);
   },
   saveToLocalStorage(name, value) {
+    if (Array.isArray(value)) value = JSON.stringify(value);
     localStorage.setItem(name, value);
   },
   deepCopy(object) {

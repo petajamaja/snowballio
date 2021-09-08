@@ -37,20 +37,7 @@ export default {
   name: "MainScreen",
   data() {
     return {
-      activeDebts: [
-        {
-          id: 0,
-          description: "Placeholder debt",
-          amount: utils.to100(8000),
-          annualInterestRate: 0,
-          installment: utils.to100(5000),
-          monthlyDueDate: 26,
-          fixedMonthlyFees: 3000,
-          totalPaid: 0,
-          totalFeesPaid: 0,
-          totalInterestPaid: 0
-        }
-      ],
+      activeDebts: [],
       paidOffDebts: [],
       today: null,
       paymentHistory: [],
@@ -67,6 +54,8 @@ export default {
     );
     // reset ability to make minimum payments if a new month has started
     this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(this.today);
+    this.paidOffDebts = this.loadPaidOffDebts();
+    this.activeDebts = this.loadActiveDebts();
 
     this.emitter.on("there-is-error-in-debt", errenousDebtId => {
       let index = this.validationErrors.indexOf(errenousDebtId);
@@ -98,6 +87,37 @@ export default {
     });
   },
   methods: {
+    loadActiveDebts: function() {
+      let debts = utils.getFromLocalStorage("activeDebts");
+      console.log("debts: ", debts);
+      if (debts !== null) return JSON.parse(debts);
+      // this happens if there are no debts and no paid off debts
+      if (this.paidOffDebts.length === 0)
+        return [
+          {
+            id: 0,
+            description: "Placeholder debt",
+            amount: utils.to100(8000),
+            annualInterestRate: 0,
+            installment: utils.to100(5000),
+            monthlyDueDate: 26,
+            fixedMonthlyFees: 3000,
+            totalPaid: 0,
+            totalFeesPaid: 0,
+            totalInterestPaid: 0
+          }
+        ];
+    },
+    loadPaidOffDebts: function() {
+      let paidOffDebts = utils.getFromLocalStorage("paidOffDebts");
+      return paidOffDebts === null ? [] : JSON.parse(paidOffDebts);
+    },
+    saveActiveDebtsToLocalStorage: function() {
+      utils.saveToLocalStorage("activeDebts", this.activeDebts);
+    },
+    savePaidOffDebtsToLocalStorage: function() {
+      utils.saveToLocalStorage("paidOffDebts", this.paidOffDebts);
+    },
     sortDebtsBasedOnAmount: function(debtA, debtB) {
       return debtA.amount - debtB.amount;
     },
@@ -108,6 +128,7 @@ export default {
         this.remainingMoneyToCarryOver += this.activeDebts[debtIndex].totalPaid;
       }
       this.activeDebts.splice(debtIndex, 1);
+      this.saveActiveDebtsToLocalStorage();
     },
     addItemDebt: function() {
       this.activeDebts.push({
@@ -123,10 +144,12 @@ export default {
         totalInterestPaid: 0
       });
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
+      this.saveActiveDebtsToLocalStorage();
     },
     updateItemDebt: function(update) {
       this.activeDebts[update.index] = utils.deepCopy(update.updatedItem);
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
+      this.saveActiveDebtsToLocalStorage();
     },
     payOffDebtAtIndex: function(debtIndex) {
       let debtPaidOff = this.activeDebts[debtIndex];
@@ -139,6 +162,8 @@ export default {
       if (debtIsNotTheLastOne) {
         this.reallocateCarryOverMoneyToFirstDebt();
       }
+      this.saveActiveDebtsToLocalStorage();
+      this.savePaidOffDebtsToLocalStorage();
     },
     makePaymentOfType: function(type, amount) {
       let firstDebt = this.activeDebts[0];
@@ -148,6 +173,7 @@ export default {
       if (firstDebt.totalPaid >= firstDebt.amount) {
         this.payOffDebtAtIndex(0);
       }
+      this.saveActiveDebtsToLocalStorage();
     },
     reallocateCarryOverMoneyToFirstDebt: function() {
       this.makePaymentOfType("carry", this.remainingMoneyToCarryOver);
@@ -167,6 +193,7 @@ export default {
       this.lastMinimumPaymentDate = new Date();
       this.monthlyMinimumPaid = true;
       localStorage.setItem("lastMinPaymentDate", this.lastMinimumPaymentDate);
+      this.saveActiveDebtsToLocalStorage();
     },
     minimumPaymentDoneThisMonth: function(currentDate) {
       if (!this.lastMinimumPaymentDate) return true;
@@ -185,6 +212,7 @@ export default {
         "lastInterestChargeDateForDebt" + debtIndex,
         chargeDate
       );
+      this.saveActiveDebtsToLocalStorage();
     },
     saveToPaymentHistory: function(amount, debtId, type) {
       // this is when there is no interest
