@@ -1,7 +1,7 @@
 <template>
   <div v-if="allInputsCorrect" class="calculated-totals">
-    <p>Total debt: {{ totalDebtSum }}</p>
-    <p>Total paid off: {{ paidOff }}</p>
+    <p>Total debt: {{ from100(totalDebtSum) }}</p>
+    <p>Total paid off: {{ from100(paidOff) }}</p>
     <p>Months till smallest debt paid off: {{ monthsTillSmallestDebtOut }}</p>
     <p>Months till all debt paid off: {{ monthsTillAllDebtOut }}</p>
   </div>
@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import utils from "../../utils.js";
+
 export default {
   name: "CalculatedTotals",
   props: [
@@ -21,7 +23,10 @@ export default {
     "monthsTillSmallestDebtOut",
     "monthsTillAllDebtOut",
     "allInputsCorrect"
-  ]
+  ],
+  methods: {
+    ...utils
+  }
 };
 </script>
 

@@ -23,7 +23,8 @@
           type="number"
           id="amount-input"
           class="amount-input"
-          v-model.number="debtItem.amount"
+          v-bind:value="from100(debtItem.amount)"
+          v-on:input="setAmount($event)"
         />
         <p v-if="amountIsZeroOrLess" class="error">
           Debt amount must be positive
@@ -33,7 +34,8 @@
           type="number"
           id="installment-input"
           class="installment-input"
-          v-model.number="debtItem.installment"
+          v-bind:value="from100(debtItem.installment)"
+          v-on:input="setInstallment($event)"
         />
         <p v-if="installmentIsZeroOrLess && thisIsTheMinimalDebt" class="error">
           First debt payment must be positive!
@@ -61,7 +63,8 @@
               type="number"
               id="fixed-fees-input"
               class="fixed-fees-input"
-              v-model.number="debtItem.fixedMonthlyFees"
+              v-bind:value="from100(debtItem.fixedMonthlyFees)"
+              v-on:input="setFees($event)"
             />
             <label for="due-date-input">Charged on: </label>
             <input
@@ -140,6 +143,16 @@ export default {
     }
   },
   methods: {
+    ...utils,
+    setInstallment(event) {
+      this.debtItem.installment = utils.to100(event.target.value);
+    },
+    setFees(event) {
+      this.debtItem.fixedMonthlyFees = utils.to100(event.target.value);
+    },
+    setAmount(event) {
+      this.debtItem.amount = utils.to100(event.target.value);
+    },
     sendModifiedObjectUp: function() {
       if (this.allFieldsPassValidation) {
         this.emitter.emit("update-item-debt", {

@@ -7,7 +7,7 @@
   <div v-else-if="!allDebtIsPaidOff" class="payment-actions">
     <div v-if="!monthlyMinimumPaid" class="minimum-payment">
       <p>
-        Minimum payment: <span class="number">{{ minimum }}</span>
+        Minimum payment: <span class="number">{{ from100(minimum) }}</span>
       </p>
       <button @click="payOffAllMinimumAmounts()">PAY IT OFF!</button>
     </div>
@@ -28,6 +28,8 @@
 </template>
 
 <script>
+import utils from "../../utils.js";
+
 export default {
   name: "PaymentActionCall",
   props: [
@@ -43,6 +45,7 @@ export default {
     };
   },
   methods: {
+    ...utils,
     payOffAllMinimumAmounts: function() {
       this.emitter.emit("pay-off-all-minimum-amounts");
     },

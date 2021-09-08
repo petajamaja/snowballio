@@ -41,11 +41,11 @@ export default {
         {
           id: 0,
           description: "Placeholder debt",
-          amount: 8000,
+          amount: utils.to100(8000),
           annualInterestRate: 0,
-          installment: 5000,
+          installment: utils.to100(5000),
           monthlyDueDate: 26,
-          fixedMonthlyFees: 30,
+          fixedMonthlyFees: 3000,
           totalPaid: 0,
           totalFeesPaid: 0,
           totalInterestPaid: 0
@@ -113,11 +113,11 @@ export default {
       this.activeDebts.push({
         id: this.activeDebts.length,
         description: "New debt",
-        amount: 8000,
+        amount: utils.to100(8000),
         annualInterestRate: 0,
-        installment: 5000,
+        installment: utils.to100(5000),
         monthlyDueDate: 26,
-        fixedMonthlyFees: 30,
+        fixedMonthlyFees: utils.to100(30),
         totalPaid: 0,
         totalFeesPaid: 0,
         totalInterestPaid: 0

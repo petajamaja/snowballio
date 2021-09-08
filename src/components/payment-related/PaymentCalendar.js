@@ -31,25 +31,18 @@ export default class PaymentCalendar {
       };
       if (balance <= this.debtItem.installment) {
         calendar[month].installment = balance;
-        calendar[month].carryOver = parseFloat(
-          (this.debtItem.installment - balance).toPrecision(10)
-        );
+        calendar[month].carryOver = this.debtItem.installment - balance;
         break;
       }
       if (this.debtItem.annualInterestRate !== 0) {
-        let interest = parseFloat(
-          (balance * monthlyInterestRate).toPrecision(10)
-        );
+        let interest = Math.floor(balance * monthlyInterestRate);
         calendar[month].interest = interest;
         calendar[month].fees = this.debtItem.fixedMonthlyFees;
-        balance = parseFloat(
-          (
-            balance -
-            this.debtItem.installment +
-            interest +
-            this.debtItem.fixedMonthlyFees
-          ).toPrecision(10)
-        );
+        balance =
+          balance -
+          this.debtItem.installment +
+          interest +
+          this.debtItem.fixedMonthlyFees;
       } else {
         balance = balance - this.debtItem.installment;
       }
@@ -79,11 +72,9 @@ export default class PaymentCalendar {
     if (this.calendar.length === 0) return 0;
     return this.calendar.reduce((amount, payment, index) => {
       if (index < month) {
-        amount = parseFloat((amount + payment.installment).toPrecision(10));
+        amount = amount + payment.installment;
         if (payment.fees && payment.interest)
-          amount = parseFloat(
-            (amount + payment.fees + payment.interest).toPrecision(10)
-          );
+          amount = amount + payment.fees + payment.interest;
       }
       return amount;
     }, 0);

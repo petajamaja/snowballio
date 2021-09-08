@@ -1,15 +1,16 @@
 import { mount } from "@vue/test-utils";
 import ItemDebt from "../debt-related/ItemDebt.vue";
 import { nextTick } from "vue";
+import utils from "../../utils.js";
 
 const placeholderDebt = {
   id: 0,
   description: "New debt",
-  amount: 50,
+  amount: utils.to100(50),
   annualInterestRate: 12.5,
-  installment: 11,
+  installment: utils.to100(11),
   monthlyDueDate: 5,
-  fixedMonthlyFees: 1,
+  fixedMonthlyFees: utils.to100(1),
   totalPaid: 0,
   totalFeesPaid: 0,
   totalInterestPaid: 0
@@ -18,9 +19,9 @@ const placeholderDebt = {
 const placeholderNoInterestDebt = {
   id: 0,
   description: "New debt without interest",
-  amount: 50,
+  amount: utils.to100(50),
   annualInterestRate: 0,
-  installment: 11,
+  installment: utils.to100(11),
   monthlyDueDate: 5,
   fixedMonthlyFees: 0,
   totalPaid: 0,
@@ -114,10 +115,10 @@ describe("timeTillPaidOff() function", () => {
     wrapper.setData({
       debtItem: {
         ...wrapper.vm.debtItem,
-        totalPaid: 50
+        totalPaid: utils.to100(50)
       }
     });
-    expect(wrapper.vm.debtItem.totalPaid).toBe(50);
+    expect(wrapper.vm.debtItem.totalPaid).toBe(utils.to100(50));
     expect(wrapper.vm.timeTillPaidOff).toBe(0);
   });
   it("returns 6 if the amount of debt is 50", () => {
@@ -132,7 +133,7 @@ describe("timeTillPaidOff() function", () => {
   });
   it("returns correct value if there is no interest", () => {
     expect(noInterestWrapper.vm.debtItem.annualInterestRate).toBe(0);
-    expect(noInterestWrapper.vm.debtItem.installment).toBe(11);
+    expect(noInterestWrapper.vm.debtItem.installment).toBe(utils.to100(11));
     expect(noInterestWrapper.vm.debtItem.fixedMonthlyFees).toBe(0);
     expect(noInterestWrapper.vm.timeTillPaidOff).toBe(5);
   });
@@ -148,33 +149,33 @@ describe("timeTillPaidOff() function", () => {
 describe("paymentCalendar() function", () => {
   const calendar = [
     {
-      installment: 11,
-      fees: 1,
-      interest: 0.5
+      installment: utils.to100(11),
+      fees: utils.to100(1),
+      interest: utils.to100(0.5)
     },
     {
-      installment: 11,
-      fees: 1,
-      interest: 0.405
+      installment: utils.to100(11),
+      fees: utils.to100(1),
+      interest: utils.to100(0.4)
     },
     {
-      installment: 11,
-      fees: 1,
-      interest: 0.30905
+      installment: utils.to100(11),
+      fees: utils.to100(1),
+      interest: utils.to100(0.3)
     },
     {
-      installment: 11,
-      fees: 1,
-      interest: 0.2121405
+      installment: utils.to100(11),
+      fees: utils.to100(1),
+      interest: utils.to100(0.21)
     },
     {
-      installment: 11,
-      fees: 1,
-      interest: 0.114261905
+      installment: utils.to100(11),
+      fees: utils.to100(1),
+      interest: utils.to100(0.11)
     },
     {
-      installment: 1.540452405,
-      carryOver: 9.459547595
+      installment: utils.to100(1.52),
+      carryOver: utils.to100(9.48)
     }
   ];
 
@@ -219,35 +220,23 @@ describe("paymentCalendar() function", () => {
     expect(
       Object.prototype.hasOwnProperty.call(calendarGenerated[4], "interest")
     ).toBe(false);
-    expect(calendarGenerated[4].installment).toBe(6);
+    expect(calendarGenerated[4].installment).toBe(utils.to100(6));
   });
 });
 
 describe("amountPaidByMonth() function", () => {
   it("correctly calculates all values from month 1 to month 6", () => {
-    let one = 12.5;
-    let two = parseFloat((one + 12.405).toPrecision(10));
-    let three = parseFloat((two + 12.30905).toPrecision(10));
-    let four = parseFloat((three + 12.2121405).toPrecision(10));
-    let five = parseFloat((four + 12.114261905).toPrecision(10));
-    let six = parseFloat((five + 1.540452405).toPrecision(10));
-    expect(wrapper.vm.amountPaidByMonth(1)).toBe(
-      parseFloat(one.toPrecision(10))
-    );
-    expect(wrapper.vm.amountPaidByMonth(2)).toBe(
-      parseFloat(two.toPrecision(10))
-    );
-    expect(wrapper.vm.amountPaidByMonth(3)).toBe(
-      parseFloat(three.toPrecision(10))
-    );
-    expect(wrapper.vm.amountPaidByMonth(4)).toBe(
-      parseFloat(four.toPrecision(10))
-    );
-    expect(wrapper.vm.amountPaidByMonth(5)).toBe(
-      parseFloat(five.toPrecision(10))
-    );
-    expect(wrapper.vm.amountPaidByMonth(6)).toBe(
-      parseFloat(six.toPrecision(10))
-    );
+    let one = utils.to100(12.5);
+    let two = one + utils.to100(12.4);
+    let three = two + utils.to100(12.3);
+    let four = three + utils.to100(12.21);
+    let five = four + utils.to100(12.11);
+    let six = five + utils.to100(1.52);
+    expect(wrapper.vm.amountPaidByMonth(1)).toBe(one);
+    expect(wrapper.vm.amountPaidByMonth(2)).toBe(two);
+    expect(wrapper.vm.amountPaidByMonth(3)).toBe(three);
+    expect(wrapper.vm.amountPaidByMonth(4)).toBe(four);
+    expect(wrapper.vm.amountPaidByMonth(5)).toBe(five);
+    expect(wrapper.vm.amountPaidByMonth(6)).toBe(six);
   });
 });
