@@ -191,7 +191,10 @@ export default {
       this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
       this.lastMinimumPaymentDate = new Date();
       this.monthlyMinimumPaid = true;
-      utils.saveToLocalStorage("lastMinPaymentDate", this.lastMinimumPaymentDate);
+      utils.saveToLocalStorage(
+        "lastMinPaymentDate",
+        this.lastMinimumPaymentDate
+      );
       this.saveActiveDebtsToLocalStorage();
     },
     minimumPaymentDoneThisMonth: function(currentDate) {

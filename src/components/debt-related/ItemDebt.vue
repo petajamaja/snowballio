@@ -59,7 +59,7 @@
               v-model.number="debtItem.annualInterestRate"
             />
             <p v-if="!annualInterestIsWithinLimits" class="error">
-              Interest should be between 0 and 99%! 
+              Interest should be between 0 and 99%!
             </p>
             <label for="fixed-fees-input">Fixed fees: </label>
             <input
@@ -83,15 +83,15 @@
         </InterestAccordion>
         <div>
           <p>Already paid off:</p>
-          <p>{{ debtItem.totalPaid }}</p>
+          <p>{{ from100(debtItem.totalPaid) }}</p>
         </div>
         <div v-if="debtItem.annualInterestRate !== 0">
           <p>Total interest paid:</p>
-          <p>{{ debtItem.totalInterestPaid }}</p>
+          <p>{{ from100(debtItem.totalInterestPaid) }}</p>
         </div>
         <div v-if="debtItem.annualInterestRate !== 0">
           <p>Total fees paid:</p>
-          <p>{{ debtItem.totalFeesPaid }}</p>
+          <p>{{ from100(debtItem.totalFeesPaid) }}</p>
         </div>
       </form>
     </div>
@@ -214,12 +214,15 @@ export default {
       return this.debtItem.installment < 0;
     },
     annualInterestIsWithinLimits: function() {
-      return ( this.debtItem.annualInterestRate >= 0 && 
-               this.debtItem.annualInterestRate < 100 );
+      return (
+        this.debtItem.annualInterestRate >= 0 &&
+        this.debtItem.annualInterestRate < 100
+      );
     },
     dateIsWithinLimits: function() {
-      return ( this.debtItem.monthlyDueDate >= 1 && 
-               this.debtItem.monthlyDueDate <= 28 );
+      return (
+        this.debtItem.monthlyDueDate >= 1 && this.debtItem.monthlyDueDate <= 28
+      );
     },
     allFieldsPassValidation: function() {
       return (
