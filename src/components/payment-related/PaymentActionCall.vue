@@ -51,7 +51,7 @@ export default {
     },
     makeExtraPayment: function() {
       if (this.extraPayment > 0)
-        this.emitter.emit("make-extra-payment", this.extraPayment);
+        this.emitter.emit("make-extra-payment", utils.to100(this.extraPayment));
     }
   }
 };
