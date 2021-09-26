@@ -50,7 +50,7 @@
           Payment must be zero or more!
         </p>
         <InterestAccordion>
-          <form>
+          <form @change="sendModifiedObjectUp()">
             <label for="annual-interest-input">Annual interest:</label>
             <input
               type="number"
@@ -58,6 +58,9 @@
               class="annual-interest-input"
               v-model.number="debtItem.annualInterestRate"
             />
+            <p v-if="!annualInterestIsWithinLimits" class="error">
+              Interest should be between 0 and 99%! 
+            </p>
             <label for="fixed-fees-input">Fixed fees: </label>
             <input
               type="number"
@@ -73,6 +76,9 @@
               class="due-date-input"
               v-model.number="debtItem.monthlyDueDate"
             />
+            <p v-if="!dateIsWithinLimits" class="error">
+              There are only 28 to 31 days in each month, you know..?
+            </p>
           </form>
         </InterestAccordion>
         <div>
@@ -207,13 +213,23 @@ export default {
     installmentIsLessThanZero: function() {
       return this.debtItem.installment < 0;
     },
+    annualInterestIsWithinLimits: function() {
+      return ( this.debtItem.annualInterestRate >= 0 && 
+               this.debtItem.annualInterestRate < 100 );
+    },
+    dateIsWithinLimits: function() {
+      return ( this.debtItem.monthlyDueDate >= 1 && 
+               this.debtItem.monthlyDueDate <= 28 );
+    },
     allFieldsPassValidation: function() {
       return (
         !this.amountIsZeroOrLess &&
         !this.amountIsEmpty &&
         !this.installmentIsEmpty &&
         !this.installmentIsLessThanZero &&
-        !(this.installmentIsZeroOrLess && this.thisIsTheMinimalDebt)
+        !(this.installmentIsZeroOrLess && this.thisIsTheMinimalDebt) &&
+        this.annualInterestIsWithinLimits &&
+        this.dateIsWithinLimits
       );
     },
     monthlyInterestRate: function() {

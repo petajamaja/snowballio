@@ -89,7 +89,6 @@ export default {
   methods: {
     loadActiveDebts: function() {
       let debts = utils.getFromLocalStorage("activeDebts");
-      console.log("debts: ", debts);
       if (debts !== null) return JSON.parse(debts);
       // this happens if there are no debts and no paid off debts
       if (this.paidOffDebts.length === 0)
@@ -192,7 +191,7 @@ export default {
       this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
       this.lastMinimumPaymentDate = new Date();
       this.monthlyMinimumPaid = true;
-      localStorage.setItem("lastMinPaymentDate", this.lastMinimumPaymentDate);
+      utils.saveToLocalStorage("lastMinPaymentDate", this.lastMinimumPaymentDate);
       this.saveActiveDebtsToLocalStorage();
     },
     minimumPaymentDoneThisMonth: function(currentDate) {
