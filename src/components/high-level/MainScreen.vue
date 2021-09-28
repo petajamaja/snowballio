@@ -9,6 +9,7 @@
         :monthlyMinimumPaid="monthlyMinimumPaid"
       />
       <AddNewDebtButton />
+      <DownloadUploadButtons />
     </div>
     <AllDebtsScreen
       :itemDebts="activeDebts"
@@ -26,6 +27,7 @@
 </template>
 
 <script>
+import DownloadUploadButtons from "./DownloadUploadButtons.vue";
 import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
@@ -85,6 +87,12 @@ export default {
     this.emitter.on("update-item-debt", update => {
       this.updateItemDebt(update);
     });
+    this.emitter.on("save-state-to-local-machine", () => {
+      this.saveStateToLocalMachine();
+    });
+    this.emitter.on("upload-state-from-local-machine", input => {
+      this.loadStateFromLocalMachine(input);
+    });
   },
   methods: {
     loadActiveDebts: function() {
@@ -100,7 +108,7 @@ export default {
             annualInterestRate: 0,
             installment: utils.to100(5000),
             monthlyDueDate: 26,
-            fixedMonthlyFees: 3000,
+            fixedMonthlyFees: 0,
             totalPaid: 0,
             totalFeesPaid: 0,
             totalInterestPaid: 0
@@ -116,6 +124,34 @@ export default {
     },
     savePaidOffDebtsToLocalStorage: function() {
       utils.saveToLocalStorage("paidOffDebts", this.paidOffDebts);
+    },
+    saveStateToLocalMachine: function() {
+      const filename =
+        "snowballio-save-" + this.today.toJSON().slice(0, 10) + ".json";
+      const data = { ...localStorage };
+      const blob = new Blob([JSON.stringify(data)], {
+        type: "application/json"
+      });
+      utils.saveToLocalMachine(filename, blob);
+    },
+    loadStateFromLocalMachine: function(filename) {
+      let onload = function(e) {
+        const content = JSON.parse(e.target.result);
+        if ("activeDebts" in content) {
+          this.activeDebts = JSON.parse(content.activeDebts);
+        }
+        if ("paidOffDebts" in content) {
+          this.paidOffDebts = JSON.parse(content.paidOffDebts);
+        }
+        if ("paymentHistory" in content) {
+          this.paymentHistory = JSON.parse(content.paymentHistory);
+        }
+        if ("lastMinPaymentDate" in content) {
+          this.lastMinimumPaymentDate = new Date(content.lastMinPaymentDate);
+        }
+        utils.replaceLocalStorageWith(content);
+      }.bind(this);
+      utils.getFromLocalMachine(filename, onload);
     },
     sortDebtsBasedOnAmount: function(debtA, debtB) {
       return debtA.amount - debtB.amount;
@@ -272,6 +308,7 @@ export default {
           ]
         });
       }
+      utils.saveToLocalStorage("paymentHistory", this.paymentHistory);
     },
     removeAllRelatedPaymentHistoryForDebt: function(debtId) {
       this.paymentHistory = this.paymentHistory.filter(year => {
@@ -283,6 +320,7 @@ export default {
         });
         return year.paymentsMonthly.length !== 0;
       });
+      utils.saveToLocalStorage("paymentHistory", this.paymentHistory);
     },
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
@@ -366,7 +404,8 @@ export default {
     AllDebtsScreen,
     AddNewDebtButton,
     PaymentActionCall,
-    CalculatedTotals
+    CalculatedTotals,
+    DownloadUploadButtons
   }
 };
 </script>
