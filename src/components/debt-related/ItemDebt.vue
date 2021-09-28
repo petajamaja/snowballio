@@ -97,7 +97,16 @@
     </div>
     <div v-else>
       <p>You paid this debt off completely!</p>
-      <p>Total money paid : {{ debtItem.totalPaid }}</p>
+      <p>
+        Total money paid :
+        {{
+          from100(
+            debtItem.totalPaid +
+              debtItem.totalFeesPaid +
+              debtItem.totalInterestPaid
+          )
+        }}
+      </p>
     </div>
     <button class="delete" v-if="!debtIsPaidOff" @click="deleteItemDebt()">
       &#10006;
