@@ -187,6 +187,7 @@ export default {
     },
     toggleDescriptionEdit: function() {
       this.descriptionEditInputOpen = !this.descriptionEditInputOpen;
+      if (!this.descriptionEditInputOpen) this.sendModifiedObjectUp();
     },
     /**
      * Under assumption that the user logs in at least once per month
