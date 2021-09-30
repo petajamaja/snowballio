@@ -171,9 +171,9 @@ export default {
         description: "New debt",
         amount: utils.to100(8000),
         annualInterestRate: 0,
-        installment: utils.to100(5000),
+        installment: utils.to100(500),
         monthlyDueDate: 26,
-        fixedMonthlyFees: utils.to100(30),
+        fixedMonthlyFees: 0,
         totalPaid: 0,
         totalFeesPaid: 0,
         totalInterestPaid: 0
