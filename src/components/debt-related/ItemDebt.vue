@@ -42,6 +42,17 @@
         </p>
         <p
           v-if="
+            !installmentMoreThanMinimum &&
+              thisIsTheMinimalDebt &&
+              !installmentIsZeroOrLess
+          "
+          class="error"
+        >
+          First debt payment can't be less than
+          {{ from100(minimumInstallment) }}!
+        </p>
+        <p
+          v-if="
             (installmentIsEmpty || installmentIsLessThanZero) &&
               !thisIsTheMinimalDebt
           "
@@ -126,7 +137,8 @@ export default {
     "today",
     "itemDebt",
     "thisIsTheMinimalDebt",
-    "debtIsPaidOff"
+    "debtIsPaidOff",
+    "minimumInstallment"
   ],
   data() {
     return {
@@ -217,6 +229,10 @@ export default {
     installmentIsZeroOrLess: function() {
       return this.debtItem.installment <= 0;
     },
+    installmentMoreThanMinimum: function() {
+      if (!this.thisIsTheMinimalDebt) return true;
+      return this.debtItem.installment >= this.minimumInstallment;
+    },
     installmentIsEmpty: function() {
       return this.debtItem.installment === "";
     },
@@ -240,6 +256,7 @@ export default {
         !this.amountIsEmpty &&
         !this.installmentIsEmpty &&
         !this.installmentIsLessThanZero &&
+        this.installmentMoreThanMinimum &&
         !(this.installmentIsZeroOrLess && this.thisIsTheMinimalDebt) &&
         this.annualInterestIsWithinLimits &&
         this.dateIsWithinLimits

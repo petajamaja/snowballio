@@ -7,6 +7,7 @@
       :key="itemDebt.id"
       :itemDebt="itemDebt"
       :thisIsTheMinimalDebt="index === 0"
+      :minimumInstallment="installmentAbsoluteMinimum"
     />
   </div>
   <p>====================================</p>
@@ -19,6 +20,7 @@
       :itemDebt="itemDebt"
       :debtIsPaidOff="true"
       :thisIsTheMinimalDebt="false"
+      :minimumInstallment="installmentAbsoluteMinimum"
     />
   </div>
 </template>
@@ -27,7 +29,7 @@
 import ItemDebt from "./ItemDebt.vue";
 export default {
   name: "AllDebtsScreen",
-  props: ["itemDebts", "paidOffDebts", "today"],
+  props: ["itemDebts", "paidOffDebts", "today", "installmentAbsoluteMinimum"],
   components: {
     ItemDebt
   }

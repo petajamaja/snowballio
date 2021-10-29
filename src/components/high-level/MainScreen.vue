@@ -14,7 +14,9 @@
     <AllDebtsScreen
       :itemDebts="activeDebts"
       :today="today"
+      :key="updateAllDebtsScreenKey"
       :paidOffDebts="paidOffDebts"
+      :installmentAbsoluteMinimum="minimumInstallmentCanNotGetSmallerThanThis"
     />
     <CalculatedTotals
       :totalDebtSum="totalDebtSum"
@@ -46,7 +48,9 @@ export default {
       monthlyMinimumPaid: false,
       lastMinimumPaymentDate: null,
       remainingMoneyToCarryOver: 0,
-      validationErrors: []
+      validationErrors: [],
+      minimumInstallmentCanNotGetSmallerThanThis: 0,
+      updateAllDebtsScreenKey: 0
     };
   },
   created() {
@@ -58,6 +62,9 @@ export default {
     this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(this.today);
     this.paidOffDebts = this.loadPaidOffDebts();
     this.activeDebts = this.loadActiveDebts();
+    this.minimumInstallmentCanNotGetSmallerThanThis = utils.getFromLocalStorage(
+      "minimumInstallmentCanNotGetSmallerThanThis"
+    );
 
     this.emitter.on("there-is-error-in-debt", errenousDebtId => {
       let index = this.validationErrors.indexOf(errenousDebtId);
@@ -111,7 +118,8 @@ export default {
             fixedMonthlyFees: 0,
             totalPaid: 0,
             totalFeesPaid: 0,
-            totalInterestPaid: 0
+            totalInterestPaid: 0,
+            minimumInstallment: this.minimumInstallmentCanNotGetSmallerThanThis
           }
         ];
     },
@@ -149,7 +157,13 @@ export default {
         if ("lastMinPaymentDate" in content) {
           this.lastMinimumPaymentDate = new Date(content.lastMinPaymentDate);
         }
+        if ("minimumInstallmentCanNotGetSmallerThanThis" in content) {
+          this.minimumInstallmentCanNotGetSmallerThanThis = JSON.parse(
+            content.minimumInstallmentCanNotGetSmallerThanThis
+          );
+        }
         utils.replaceLocalStorageWith(content);
+        this.forceUpdateDebtScreen();
       }.bind(this);
       utils.getFromLocalMachine(filename, onload);
     },
@@ -196,6 +210,7 @@ export default {
       let debtIsNotTheLastOne = this.activeDebts.length > 0;
       if (debtIsNotTheLastOne) {
         this.reallocateCarryOverMoneyToFirstDebt();
+        this.increaseNextDebtMinPaymentBy(debtPaidOff.installment);
       }
       this.saveActiveDebtsToLocalStorage();
       this.savePaidOffDebtsToLocalStorage();
@@ -212,6 +227,15 @@ export default {
     },
     reallocateCarryOverMoneyToFirstDebt: function() {
       this.makePaymentOfType("carry", this.remainingMoneyToCarryOver);
+    },
+    increaseNextDebtMinPaymentBy: function(sum) {
+      this.activeDebts[0].installment += sum;
+      this.minimumInstallmentCanNotGetSmallerThanThis = this.activeDebts[0].installment;
+      utils.saveToLocalStorage(
+        "minimumInstallmentCanNotGetSmallerThanThis",
+        this.minimumInstallmentCanNotGetSmallerThanThis
+      );
+      this.forceUpdateDebtScreen();
     },
     makeExtraPayment: function(amount) {
       this.makePaymentOfType("extra", amount);
@@ -325,6 +349,9 @@ export default {
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
       if (index !== -1) this.validationErrors.splice(index, 1);
+    },
+    forceUpdateDebtScreen() {
+      this.updateAllDebtsScreenKey += 1;
     }
   },
   computed: {
