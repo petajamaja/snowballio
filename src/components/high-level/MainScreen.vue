@@ -35,6 +35,7 @@ import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
 import PaymentActionCall from "../payment-related/PaymentActionCall.vue";
 import PaymentCalendar from "../payment-related/PaymentCalendar.js";
+import SnowballState from "./state.js";
 import utils from "../../utils.js";
 
 export default {
@@ -50,21 +51,21 @@ export default {
       remainingMoneyToCarryOver: 0,
       validationErrors: [],
       minimumInstallmentCanNotGetSmallerThanThis: 0,
-      updateAllDebtsScreenKey: 0
+      updateAllDebtsScreenKey: 0,
+      globalIdCounter: 0,
+      state: null
     };
   },
   created() {
     this.today = new Date();
-    this.lastMinimumPaymentDate = new Date(
-      utils.getFromLocalStorage("lastMinPaymentDate")
-    );
+    this.state = new SnowballState();
+    this.lastMinimumPaymentDate = this.state.lastMinPaymentDate;
     // reset ability to make minimum payments if a new month has started
     this.monthlyMinimumPaid = this.minimumPaymentDoneThisMonth(this.today);
     this.paidOffDebts = this.loadPaidOffDebts();
     this.activeDebts = this.loadActiveDebts();
-    this.minimumInstallmentCanNotGetSmallerThanThis = utils.getFromLocalStorage(
-      "minimumInstallmentCanNotGetSmallerThanThis"
-    );
+    this.minimumInstallmentCanNotGetSmallerThanThis = this.state.minimumInstallmentCanNotGetSmallerThanThis;
+    this.globalIdCounter = this.state.globalIdCounter;
 
     this.emitter.on("there-is-error-in-debt", errenousDebtId => {
       let index = this.validationErrors.indexOf(errenousDebtId);
@@ -95,77 +96,31 @@ export default {
       this.updateItemDebt(update);
     });
     this.emitter.on("save-state-to-local-machine", () => {
-      this.saveStateToLocalMachine();
+      this.state.export();
     });
     this.emitter.on("upload-state-from-local-machine", input => {
-      this.loadStateFromLocalMachine(input);
+      this.state.import(
+        input,
+        this.updateValuesFromState,
+        this.forceUpdateDebtScreen
+      );
     });
   },
   methods: {
     loadActiveDebts: function() {
-      let debts = utils.getFromLocalStorage("activeDebts");
+      let debts = this.state.activeDebts;
       if (debts !== null) return JSON.parse(debts);
-      // this happens if there are no debts and no paid off debts
-      if (this.paidOffDebts.length === 0)
-        return [
-          {
-            id: 0,
-            description: "Placeholder debt",
-            amount: utils.to100(8000),
-            annualInterestRate: 0,
-            installment: utils.to100(5000),
-            monthlyDueDate: 26,
-            fixedMonthlyFees: 0,
-            totalPaid: 0,
-            totalFeesPaid: 0,
-            totalInterestPaid: 0,
-            minimumInstallment: this.minimumInstallmentCanNotGetSmallerThanThis
-          }
-        ];
+      if (this.paidOffDebts.length === 0) return [];
     },
     loadPaidOffDebts: function() {
-      let paidOffDebts = utils.getFromLocalStorage("paidOffDebts");
+      let paidOffDebts = this.state.paidOffDebts;
       return paidOffDebts === null ? [] : JSON.parse(paidOffDebts);
     },
     saveActiveDebtsToLocalStorage: function() {
-      utils.saveToLocalStorage("activeDebts", this.activeDebts);
+      this.state.activeDebts = this.activeDebts;
     },
     savePaidOffDebtsToLocalStorage: function() {
-      utils.saveToLocalStorage("paidOffDebts", this.paidOffDebts);
-    },
-    saveStateToLocalMachine: function() {
-      const filename =
-        "snowballio-save-" + this.today.toJSON().slice(0, 10) + ".json";
-      const data = { ...localStorage };
-      const blob = new Blob([JSON.stringify(data)], {
-        type: "application/json"
-      });
-      utils.saveToLocalMachine(filename, blob);
-    },
-    loadStateFromLocalMachine: function(filename) {
-      let onload = function(e) {
-        const content = JSON.parse(e.target.result);
-        if ("activeDebts" in content) {
-          this.activeDebts = JSON.parse(content.activeDebts);
-        }
-        if ("paidOffDebts" in content) {
-          this.paidOffDebts = JSON.parse(content.paidOffDebts);
-        }
-        if ("paymentHistory" in content) {
-          this.paymentHistory = JSON.parse(content.paymentHistory);
-        }
-        if ("lastMinPaymentDate" in content) {
-          this.lastMinimumPaymentDate = new Date(content.lastMinPaymentDate);
-        }
-        if ("minimumInstallmentCanNotGetSmallerThanThis" in content) {
-          this.minimumInstallmentCanNotGetSmallerThanThis = JSON.parse(
-            content.minimumInstallmentCanNotGetSmallerThanThis
-          );
-        }
-        utils.replaceLocalStorageWith(content);
-        this.forceUpdateDebtScreen();
-      }.bind(this);
-      utils.getFromLocalMachine(filename, onload);
+      this.state.paidOffDebts = this.paidOffDebts;
     },
     sortDebtsBasedOnAmount: function(debtA, debtB) {
       return debtA.amount - debtB.amount;
@@ -176,12 +131,15 @@ export default {
         this.removeAllRelatedPaymentHistoryForDebt(debtId);
         this.remainingMoneyToCarryOver += this.activeDebts[debtIndex].totalPaid;
       }
+      if (this.activeDebts[debtIndex].annualInterestRate !== 0) {
+        this.removeAllRelatedInterestChargeDatesForDebt(debtId);
+      }
       this.activeDebts.splice(debtIndex, 1);
       this.saveActiveDebtsToLocalStorage();
     },
     addItemDebt: function() {
       this.activeDebts.push({
-        id: this.activeDebts.length,
+        id: this.globalIdCounter,
         description: "New debt",
         amount: utils.to100(8000),
         annualInterestRate: 0,
@@ -192,6 +150,8 @@ export default {
         totalFeesPaid: 0,
         totalInterestPaid: 0
       });
+      this.globalIdCounter += 1;
+      this.state.globalIdCounter = this.globalIdCounter;
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
       this.saveActiveDebtsToLocalStorage();
     },
@@ -199,6 +159,7 @@ export default {
       this.activeDebts[update.index] = utils.deepCopy(update.updatedItem);
       this.activeDebts.sort(this.sortDebtsBasedOnAmount);
       this.saveActiveDebtsToLocalStorage();
+      this.forceUpdateDebtScreen();
     },
     payOffDebtAtIndex: function(debtIndex) {
       let debtPaidOff = this.activeDebts[debtIndex];
@@ -231,10 +192,7 @@ export default {
     increaseNextDebtMinPaymentBy: function(sum) {
       this.activeDebts[0].installment += sum;
       this.minimumInstallmentCanNotGetSmallerThanThis = this.activeDebts[0].installment;
-      utils.saveToLocalStorage(
-        "minimumInstallmentCanNotGetSmallerThanThis",
-        this.minimumInstallmentCanNotGetSmallerThanThis
-      );
+      this.state.minimumInstallmentCanNotGetSmallerThanThis = this.minimumInstallmentCanNotGetSmallerThanThis;
       this.forceUpdateDebtScreen();
     },
     makeExtraPayment: function(amount) {
@@ -251,14 +209,11 @@ export default {
       this.activeDebts.forEach(this.payOffMinimumDebtInstallment, this);
       this.lastMinimumPaymentDate = new Date();
       this.monthlyMinimumPaid = true;
-      utils.saveToLocalStorage(
-        "lastMinPaymentDate",
-        this.lastMinimumPaymentDate
-      );
+      this.state.lastMinPaymentDate = this.lastMinimumPaymentDate;
       this.saveActiveDebtsToLocalStorage();
     },
     minimumPaymentDoneThisMonth: function(currentDate) {
-      if (!this.lastMinimumPaymentDate) return true;
+      if (this.lastMinimumPaymentDate === null) return false;
       let currentMonth = currentDate.getMonth();
       let currentYear = currentDate.getFullYear();
       return (
@@ -270,11 +225,11 @@ export default {
       let debt = this.activeDebts[debtIndex];
       debt.totalInterestPaid += sum;
       debt.totalFeesPaid += debt.fixedMonthlyFees;
-      utils.saveToLocalStorage(
-        "lastInterestChargeDateForDebt" + debtIndex,
-        chargeDate
-      );
+      let lastInterestChargeDates = this.state.lastInterestChargeDates || {};
+      lastInterestChargeDates[debt.id.toString()] = chargeDate;
+      this.state.lastInterestChargeDates = lastInterestChargeDates;
       this.saveActiveDebtsToLocalStorage();
+      this.forceUpdateDebtScreen();
     },
     saveToPaymentHistory: function(amount, debtId, type) {
       // this is when there is no interest
@@ -332,7 +287,7 @@ export default {
           ]
         });
       }
-      utils.saveToLocalStorage("paymentHistory", this.paymentHistory);
+      this.state.paymentHistory = this.paymentHistory;
     },
     removeAllRelatedPaymentHistoryForDebt: function(debtId) {
       this.paymentHistory = this.paymentHistory.filter(year => {
@@ -344,7 +299,12 @@ export default {
         });
         return year.paymentsMonthly.length !== 0;
       });
-      utils.saveToLocalStorage("paymentHistory", this.paymentHistory);
+      this.state.paymentHistory = this.paymentHistory;
+    },
+    removeAllRelatedInterestChargeDatesForDebt: function(debtId) {
+      let dates = this.state.lastInterestChargeDates;
+      delete dates[debtId];
+      this.state.lastInterestChargeDates = dates;
     },
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
@@ -352,6 +312,14 @@ export default {
     },
     forceUpdateDebtScreen() {
       this.updateAllDebtsScreenKey += 1;
+    },
+    updateValuesFromState() {
+      this.activeDebts = utils.deepCopy(this.state.activeDebts);
+      this.paidOffDebts = utils.deepCopy(this.state.paidOffDebts);
+      this.paymentHistory = utils.deepCopy(this.state.paymentHistory);
+      this.minimumInstallmentCanNotGetSmallerThanThis = this.state.minimumInstallmentCanNotGetSmallerThanThis;
+      this.lastMinimumPaymentDate = this.state.lastMinPaymentDate;
+      this.globalIdCounter = this.state.globalIdCounter;
     }
   },
   computed: {
@@ -365,7 +333,7 @@ export default {
     totalPaidOff: function() {
       let debts = this.allDebtIsPaidOff
         ? this.paidOffDebts
-        : this.activeDebts.concat(this.paidOffDebts);
+        : this.activeDebts.concat(this.paidOffDebts).filter(Array.isArray);
       return debts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.totalPaid;
       }, 0);

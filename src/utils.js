@@ -3,7 +3,8 @@ export default {
     return localStorage.getItem(name);
   },
   saveToLocalStorage(name, value) {
-    if (Array.isArray(value)) value = JSON.stringify(value);
+    if (Array.isArray(value) || typeof value === "object")
+      value = JSON.stringify(value);
     localStorage.setItem(name, value);
   },
   getFromLocalMachine(filename, callback) {

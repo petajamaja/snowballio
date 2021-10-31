@@ -60,38 +60,40 @@
         >
           Payment must be zero or more!
         </p>
-        <InterestAccordion>
-          <form @change="sendModifiedObjectUp()">
-            <label for="annual-interest-input">Annual interest:</label>
-            <input
-              type="number"
-              id="annual-interest-input"
-              class="annual-interest-input"
-              v-model.number="debtItem.annualInterestRate"
-            />
-            <p v-if="!annualInterestIsWithinLimits" class="error">
-              Interest should be between 0 and 99%!
-            </p>
-            <label for="fixed-fees-input">Fixed fees: </label>
-            <input
-              type="number"
-              id="fixed-fees-input"
-              class="fixed-fees-input"
-              v-bind:value="from100(debtItem.fixedMonthlyFees)"
-              v-on:input="setFees($event)"
-            />
-            <label for="due-date-input">Charged on: </label>
-            <input
-              type="number"
-              id="due-date-input"
-              class="due-date-input"
-              v-model.number="debtItem.monthlyDueDate"
-            />
-            <p v-if="!dateIsWithinLimits" class="error">
-              There are only 28 to 31 days in each month, you know..?
-            </p>
-          </form>
-        </InterestAccordion>
+      </form>
+      <InterestAccordion>
+        <form @change="sendModifiedObjectUp()">
+          <label for="annual-interest-input">Annual interest:</label>
+          <input
+            type="number"
+            id="annual-interest-input"
+            class="annual-interest-input"
+            v-model.number="debtItem.annualInterestRate"
+          />
+          <p v-if="!annualInterestIsWithinLimits" class="error">
+            Interest should be between 0 and 99%!
+          </p>
+          <label for="fixed-fees-input">Fixed fees: </label>
+          <input
+            type="number"
+            id="fixed-fees-input"
+            class="fixed-fees-input"
+            v-bind:value="from100(debtItem.fixedMonthlyFees)"
+            v-on:input="setFees($event)"
+          />
+          <label for="due-date-input">Charged on: </label>
+          <input
+            type="number"
+            id="due-date-input"
+            class="due-date-input"
+            v-model.number="debtItem.monthlyDueDate"
+          />
+          <p v-if="!dateIsWithinLimits" class="error">
+            There are only 28 to 31 days in each month, you know..?
+          </p>
+        </form>
+      </InterestAccordion>
+      <div class="totals">
         <div>
           <p>Already paid off:</p>
           <p>{{ from100(debtItem.totalPaid) }}</p>
@@ -104,7 +106,7 @@
           <p>Total fees paid:</p>
           <p>{{ from100(debtItem.totalFeesPaid) }}</p>
         </div>
-      </form>
+      </div>
     </div>
     <div v-else>
       <p>You paid this debt off completely!</p>
@@ -148,20 +150,8 @@ export default {
     };
   },
   created() {
-    // if no interest has been charged before, it will remain not identified
-    let lastInterestCharged = utils.getFromLocalStorage(
-      "lastInterestChargeDateForDebt" + this.debtItem.id
-    );
-    if (lastInterestCharged !== null) {
-      this.lastInterestChargeDate = new Date(lastInterestCharged);
-    }
-    if (this.shouldChargeInterest(this.today)) {
-      this.emitter.emit("charge-interest-for-debt", {
-        debtIndex: this.index,
-        chargeDate: this.today,
-        sum: this.monthlyInterest
-      });
-    }
+    this.readLastInterestChargeDate();
+    this.chargeInterestIfApplicable();
   },
   watch: {
     thisIsTheMinimalDebt: function() {
@@ -205,6 +195,8 @@ export default {
      * Under assumption that the user logs in at least once per month
      */
     shouldChargeInterest: function(today) {
+      // we don't charge interest for interest-free debts
+      if (this.debtItem.annualInterestRate === 0) return false;
       return (
         (this.lastInterestChargeDate === null ||
           today.getMonth() > this.lastInterestChargeDate.getMonth() ||
@@ -212,11 +204,40 @@ export default {
         today.getDate() >= this.debtItem.monthlyDueDate
       );
     },
+    chargeInterestIfApplicable: function() {
+      if (this.shouldChargeInterest(this.today)) {
+        this.emitter.emit("charge-interest-for-debt", {
+          debtIndex: this.index,
+          chargeDate: new Date(
+            this.today.getFullYear(),
+            this.today.getMonth(),
+            this.debtItem.monthlyDueDate,
+            0,
+            0
+          ),
+          sum: this.monthlyInterest
+        });
+      }
+    },
     amountPaidByMonth: function(month) {
       if (this.amountIsZeroOrLess) {
         return undefined;
       }
       return this.paymentCalendar.getAmountPaidByMonth(month);
+    },
+    readLastInterestChargeDate() {
+      if (this.debtItem.annualInterestRate !== 0) {
+        let lastInterestChargedDates = JSON.parse(
+          utils.getFromLocalStorage("lastInterestChargeDates")
+        );
+        if (lastInterestChargedDates !== null) {
+          let lastInterestCharged =
+            lastInterestChargedDates[this.debtItem.id] || null;
+          if (lastInterestCharged !== null) {
+            this.lastInterestChargeDate = new Date(lastInterestCharged);
+          }
+        }
+      }
     }
   },
   computed: {
@@ -405,6 +426,7 @@ button {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
 }
 .snowball-item {
   position: relative;
