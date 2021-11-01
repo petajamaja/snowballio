@@ -94,6 +94,27 @@
         </form>
       </InterestAccordion>
       <div class="totals">
+        <div class="snowball-percentage">
+          <div class="circle-outer">
+            <div class="circle-inner">
+              <div class="percentage-num">{{ percentagePaidOff }}%</div>
+            </div>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            version="1.1"
+            width="160px"
+            height="160px"
+          >
+            <defs>
+              <linearGradient id="gradient">
+                <stop offset="0%" stop-color="#00FFE5" />
+                <stop offset="100%" stop-color="#673ab7" />
+              </linearGradient>
+            </defs>
+            <circle cx="80" cy="80" r="70" stroke-linecap="round" />
+          </svg>
+        </div>
         <div>
           <p>Already paid off:</p>
           <p>{{ from100(debtItem.totalPaid) }}</p>
@@ -320,6 +341,15 @@ export default {
         return {};
       }
       return new PaymentCalendar(this.debtItem);
+    },
+    ratioPaidOff: function() {
+      return this.debtItem.totalPaid / this.debtItem.amount;
+    },
+    percentagePaidOff: function() {
+      return this.ratioPaidOff * 100;
+    },
+    dashOffset: function() {
+      return 472 - 472 * this.ratioPaidOff;
     }
   },
   components: {
@@ -359,17 +389,6 @@ export default {
   background-repeat: no-repeat;
   margin-left: 10px;
 }
-.active-border {
-  position: relative;
-  text-align: center;
-  width: 110px;
-  height: 110px;
-  border-radius: 100%;
-  background-color: #39b4cc;
-  background-image: linear-gradient(91deg, transparent 50%, #a2ecfb 50%),
-    linear-gradient(90deg, #a2ecfb 50%, transparent 50%);
-}
-
 .flex-column {
   display: flex;
   flex-direction: column;
@@ -436,5 +455,47 @@ button {
   flex: 1;
   max-width: 50%;
   flex-basis: 25%;
+}
+.snowball-percentage {
+  position: relative;
+  color: coral;
+}
+.circle-outer {
+  padding: 20px;
+  border-radius: 50%;
+  box-shadow: 6px 6px 10px -1px rgba(0, 0, 0, 0.15),
+    -6px -6px 10px -1px rgba(255, 255, 255, 0.7);
+}
+.circle-inner {
+  height: 120px;
+  width: 120px;
+  border-radius: 50%;
+  box-shadow: inset 4px 4px 6px -1px rgba(0, 0, 0, 0.2),
+    inset -4px -4px 6px -1px rgba(255, 255, 255, 0.7),
+    0.5px 0.5px 0 rgba(0, 0, 0, 0.15), inset 0 8px 10px -10px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+circle {
+  fill: none;
+  stroke: url(#gradient);
+  stroke-width: 20px;
+  stroke-dasharray: 472;
+  stroke-dashoffset: 472;
+  animation: percentage-animation 2s linear forwards;
+}
+
+svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+@keyframes percentage-animation {
+  100% {
+    stroke-dashoffset: v-bind(dashOffset);
+  }
 }
 </style>
