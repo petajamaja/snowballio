@@ -12,7 +12,7 @@ export default class SnowballState {
       0;
     this._lastMinPaymentDate =
       utils.getFromLocalStorage("lastMinPaymentDate") !== null
-        ? new Date(utils.getFromLocalStorage("lastMinPaymentDate"))
+        ? new Date(JSON.parse(utils.getFromLocalStorage("lastMinPaymentDate")))
         : null;
     this._globalIdCounter = utils.getFromLocalStorage("globalIdCounter") || 0;
   }
