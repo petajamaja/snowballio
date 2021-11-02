@@ -333,7 +333,7 @@ export default {
     totalPaidOff: function() {
       let debts = this.allDebtIsPaidOff
         ? this.paidOffDebts
-        : this.activeDebts.concat(this.paidOffDebts).filter(Array.isArray);
+        : this.activeDebts.concat(this.paidOffDebts).filter(item => item !== null);
       return debts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.totalPaid;
       }, 0);
