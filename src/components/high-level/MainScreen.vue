@@ -303,8 +303,10 @@ export default {
     },
     removeAllRelatedInterestChargeDatesForDebt: function(debtId) {
       let dates = this.state.lastInterestChargeDates;
-      delete dates[debtId];
-      this.state.lastInterestChargeDates = dates;
+      if (dates !== null) {
+        delete dates[debtId];
+        this.state.lastInterestChargeDates = dates;
+      }
     },
     removeValidationErrors: function(debtId) {
       let index = this.validationErrors.indexOf(debtId);
@@ -333,7 +335,9 @@ export default {
     totalPaidOff: function() {
       let debts = this.allDebtIsPaidOff
         ? this.paidOffDebts
-        : this.activeDebts.concat(this.paidOffDebts).filter(item => item !== null);
+        : this.activeDebts
+            .concat(this.paidOffDebts)
+            .filter(item => item !== null);
       return debts.reduce(function(accumulator, currentValue) {
         return accumulator + currentValue.totalPaid;
       }, 0);
