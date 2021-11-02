@@ -8,13 +8,15 @@ export default class SnowballState {
     this._lastInterestChargeDates =
       utils.getFromLocalStorage("lastInterestChargeDates") || null;
     this._minimumInstallmentCanNotGetSmallerThanThis =
-      utils.getFromLocalStorage("minimumInstallmentCanNotGetSmallerThanThis") ||
-      0;
+      parseInt(
+        utils.getFromLocalStorage("minimumInstallmentCanNotGetSmallerThanThis")
+      ) || 0;
     this._lastMinPaymentDate =
       utils.getFromLocalStorage("lastMinPaymentDate") !== null
         ? new Date(JSON.parse(utils.getFromLocalStorage("lastMinPaymentDate")))
         : null;
-    this._globalIdCounter = utils.getFromLocalStorage("globalIdCounter") || 0;
+    this._globalIdCounter =
+      parseInt(utils.getFromLocalStorage("globalIdCounter")) || 0;
   }
 
   get activeDebts() {
