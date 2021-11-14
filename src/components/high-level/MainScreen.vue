@@ -413,7 +413,7 @@ export default {
   flex: auto;
   padding-top: 40px;
   padding-bottom: 40px;
-  width: 60%;
+  width: 90%;
   margin: 0 auto;
 }
 

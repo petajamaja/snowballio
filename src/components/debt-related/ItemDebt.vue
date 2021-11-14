@@ -1,9 +1,9 @@
 <template>
   <div id="snowball-item" class="flex-column snowball-item">
     <div class="description-area">
-      <h2>
+      <h3>
         {{ debtItem.description }}
-      </h2>
+      </h3>
     </div>
     <div
       v-if="debtItem.totalPaid !== debtItem.amount || debtItem.amount === 0"
