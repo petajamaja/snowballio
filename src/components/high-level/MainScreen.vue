@@ -1,5 +1,5 @@
 <template>
-  <main id="main" class="scroll-hide">
+  <main id="main">
     <div id="action-buttons" class="flex-row">
       <PaymentActionCall
         :minimum="totalMinimumMonthlyPayment"
@@ -415,21 +415,6 @@ export default {
   padding-bottom: 40px;
   width: 90%;
   margin: 0 auto;
-}
-
-.scroll-hide {
-  padding-left: 16px;
-  overflow: auto;
-  /* this will hide the scrollbar in mozilla based browsers */
-  overflow: -moz-scrollbars-none;
-  /* this will hide the scrollbar in internet explorers */
-  -ms-overflow-style: none;
-}
-
-/* this will hide the scrollbar in webkit based browsers - safari, chrome, etc */
-.scroll-hide::-webkit-scrollbar {
-  width: 0 !important;
-  display: none;
 }
 
 @media only screen and (max-width: 600px) {
