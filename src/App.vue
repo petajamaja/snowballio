@@ -1,7 +1,7 @@
 <template>
-  <Header />
-  <MainScreen />
-  <Footer />
+  <Header v-if="!isMobile" />
+  <MainScreen :mobile="isMobile" />
+  <Footer v-if="!isMobile" />
 </template>
 
 <script>
@@ -15,6 +15,35 @@ export default {
     Header,
     MainScreen,
     Footer
+  },
+  data() {
+    return {
+      screenWidth: window.screen.width,
+      windowWidth: window.innerWidth
+    };
+  },
+  created() {
+    window.addEventListener("resize", this.myEventHandler);
+  },
+  umounted() {
+    window.removeEventListener("resize", this.myEventHandler);
+  },
+  methods: {
+    myEventHandler() {
+      this.screenWidth = window.screen.width;
+      this.windowWidth = window.innerWidth;
+    }
+  },
+  computed: {
+    isMobile: function() {
+      return this.screenWidth <= 480 || this.windowWidth <= 480;
+    },
+    isTablet: function() {
+      return (
+        (this.screenWidth > 481 && this.screenWidth <= 768) ||
+        (this.windowWidth > 481 && this.windowWidth <= 768)
+      );
+    }
   }
 };
 </script>

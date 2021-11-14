@@ -8,8 +8,8 @@
         :allDebtIsPaidOff="allDebtIsPaidOff"
         :monthlyMinimumPaid="monthlyMinimumPaid"
       />
-      <AddNewDebtButton />
-      <DownloadUploadButtons />
+      <AddNewDebtButton v-if="!mobile" />
+      <DownloadUploadButtons v-if="false" />
     </div>
     <AllDebtsScreen
       :itemDebts="activeDebts"
@@ -25,12 +25,14 @@
       :monthsTillAllDebtOut="monthsTillAllDebtOutIfNoExtraMoney"
       :allInputsCorrect="allInputsCorrect"
     />
+    <AddNewDebtButtonMobile v-if="mobile" />
   </main>
 </template>
 
 <script>
 import DownloadUploadButtons from "./DownloadUploadButtons.vue";
 import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
+import AddNewDebtButtonMobile from "../debt-related/mobile/AddNewDebtButtonMobile.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
 import PaymentActionCall from "../payment-related/PaymentActionCall.vue";
@@ -40,6 +42,7 @@ import utils from "../../utils.js";
 
 export default {
   name: "MainScreen",
+  props: ["mobile"],
   data() {
     return {
       activeDebts: [],
@@ -402,6 +405,7 @@ export default {
   components: {
     AllDebtsScreen,
     AddNewDebtButton,
+    AddNewDebtButtonMobile,
     PaymentActionCall,
     CalculatedTotals,
     DownloadUploadButtons
