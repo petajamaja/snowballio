@@ -4,7 +4,12 @@
 
 <script>
 export default {
-  name: "AddNewDebtButtonMobile"
+  name: "AddNewDebtButtonMobile",
+  methods: {
+    addDebt: function(){
+      this.emitter.emit('add-item-debt');
+    }
+  }
 };
 </script>
 
