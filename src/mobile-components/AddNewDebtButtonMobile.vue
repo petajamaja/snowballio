@@ -1,13 +1,13 @@
 <template>
-  <button @click="this.emitter.emit('add-item-debt')">+</button>
+  <button @click="addDebt"></button>
 </template>
 
 <script>
 export default {
   name: "AddNewDebtButtonMobile",
   methods: {
-    addDebt: function(){
-      this.emitter.emit('add-item-debt');
+    addDebt: function() {
+      this.emitter.emit("add-item-debt");
     }
   }
 };
@@ -15,10 +15,11 @@ export default {
 
 <style scoped>
 button {
-  background-color: white;
+  background: url("../assets/add_debt.svg");
   border: 0px;
   border-radius: 50%;
-  width: 20vw;
-  height: 20vw;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 25px;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <main id="main">
+  <main id="main" v-bind:class="{ short: mobile }">
     <div id="action-buttons" class="flex-row">
       <PaymentActionCall
         :minimum="totalMinimumMonthlyPayment"
@@ -25,14 +25,12 @@
       :monthsTillAllDebtOut="monthsTillAllDebtOutIfNoExtraMoney"
       :allInputsCorrect="allInputsCorrect"
     />
-    <AddNewDebtButtonMobile v-if="mobile" />
   </main>
 </template>
 
 <script>
 import DownloadUploadButtons from "./DownloadUploadButtons.vue";
 import AllDebtsScreen from "../debt-related/AllDebtsScreen.vue";
-import AddNewDebtButtonMobile from "../debt-related/mobile/AddNewDebtButtonMobile.vue";
 import AddNewDebtButton from "../debt-related/AddNewDebtButton.vue";
 import CalculatedTotals from "../debt-related/CalculatedTotals.vue";
 import PaymentActionCall from "../payment-related/PaymentActionCall.vue";
@@ -405,7 +403,6 @@ export default {
   components: {
     AllDebtsScreen,
     AddNewDebtButton,
-    AddNewDebtButtonMobile,
     PaymentActionCall,
     CalculatedTotals,
     DownloadUploadButtons
@@ -418,9 +415,10 @@ export default {
   padding-top: 40px;
   padding-bottom: 40px;
   width: 90%;
-  margin: 0 auto;
 }
-
+.short {
+  margin-bottom: 50px;
+}
 @media only screen and (max-width: 600px) {
   #main {
     width: 100%;

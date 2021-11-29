@@ -2,19 +2,22 @@
   <Header v-if="!isMobile" />
   <MainScreen :mobile="isMobile" />
   <Footer v-if="!isMobile" />
+  <FooterMobile v-if="isMobile" />
 </template>
 
 <script>
 import Header from "./components/high-level/Header.vue";
 import MainScreen from "./components/high-level/MainScreen.vue";
 import Footer from "./components/high-level/Footer.vue";
+import FooterMobile from "./mobile-components/FooterMobile.vue";
 
 export default {
   name: "App",
   components: {
     Header,
     MainScreen,
-    Footer
+    Footer,
+    FooterMobile
   },
   data() {
     return {
