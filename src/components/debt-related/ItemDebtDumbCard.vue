@@ -1,19 +1,18 @@
 <template>
   <div class="totals">
-    <StatsCircle :amount="amount" :totalPaid="totalPaid" />
     <div>
       <p>{{ totalPaid }} / {{ amount }}</p>
-    </div>
-    <div>
       <p>{{ installment }} Kč / month</p>
-      <p>{{ timeTillPaidOff }} months till paid off</p>
+      <p v-if="shouldDisplayInterest">Interest this month : {{ interest }}</p>
+      <p v-if="shouldDisplayInterest">
+        Total interest paid : {{ totalInterestPaid }}
+      </p>
+      <p v-if="shouldDisplayInterest">Total fees paid : {{ totalFeesPaid }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import StatsCircle from "./StatsCircle.vue";
-
 export default {
   name: "ItemDebtMinifiedCard",
   props: [
@@ -21,14 +20,12 @@ export default {
     "amount",
     "totalPaid",
     "totalInterestPaid",
+    "interest",
     "shouldDisplayInterest",
     "totalFeesPaid",
     "description",
     "timeTillPaidOff"
-  ],
-  components: {
-    StatsCircle
-  }
+  ]
 };
 </script>
 

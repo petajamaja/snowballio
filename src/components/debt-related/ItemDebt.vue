@@ -16,6 +16,7 @@
         :totalInterestPaid="from100(debtItem.totalInterestPaid)"
         :totalPaid="from100(debtItem.totalPaid)"
         :totalFeesPaid="from100(debtItem.totalFeesPaid)"
+        :interest="from100(debtItem.monthlyInterest)"
         :timeTillPaidOff="timeTillPaidOff"
         :shouldDisplayInterest="debtItem.annualInterestRate !== 0"
       >
